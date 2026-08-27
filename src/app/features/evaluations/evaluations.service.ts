@@ -1,0 +1,2 @@
+import { Injectable } from '@angular/core';import { ApiService } from '../../core/api.service';
+@Injectable({providedIn:'root'}) export class EvaluationsService{constructor(private api:ApiService){}datasets(){return this.api.get<any[]>('evaluations/datasets')}create(x:any){return this.api.post<any>('evaluations/datasets',x)}run(id:string){return this.api.post<any>(`evaluations/datasets/${id}/run`,{})}}

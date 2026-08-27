@@ -1,0 +1,1 @@
+import { HttpInterceptorFn } from '@angular/common/http'; export const authInterceptor:HttpInterceptorFn=(req,next)=>{const token=localStorage.getItem('qai-token');const tenant=localStorage.getItem('qai-tenant');const headers:any={};if(token)headers.Authorization='Bearer '+token;if(tenant)headers['X-Tenant']=tenant;return next(req.clone({setHeaders:headers}));};

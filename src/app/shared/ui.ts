@@ -1,0 +1,4 @@
+import { CommonModule } from '@angular/common'; import { Component, EventEmitter, Input, Output } from '@angular/core';
+@Component({selector:'qai-page-header',standalone:true,template:`<div class="page-header"><div><h1>{{title}}</h1><p>{{subtitle}}</p></div><ng-content/></div>`}) export class PageHeader{ @Input() title='';@Input() subtitle='';}
+@Component({selector:'qai-modal',standalone:true,imports:[CommonModule],template:`<div class="modal-backdrop" *ngIf="open" (click)="close.emit()"><section class="modal-card" (click)="$event.stopPropagation()"><header><h3>{{title}}</h3><button (click)="close.emit()">×</button></header><ng-content/></section></div>`}) export class Modal{ @Input() open=false;@Input() title='';@Output() close=new EventEmitter<void>();}
+@Component({selector:'qai-empty',standalone:true,template:`<div class="empty"><b>{{title}}</b><span>{{text}}</span></div>`}) export class Empty{ @Input() title='No data';@Input() text='';}

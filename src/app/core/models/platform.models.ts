@@ -1,0 +1,13 @@
+export interface ApiList<T>{items:T[];total?:number}
+export interface DashboardSummary{contacts:number;leads:number;hotLeads:number;openConversations:number;openTickets:number;pipeline:number}
+export interface Contact{id:string;companyId?:string;firstName:string;lastName:string;email:string;phone:string;lifecycleStage:string;createdAtUtc?:string}
+export interface Company{id:string;name:string;domain:string;industry:string;employees?:number;country:string;annualRevenue?:number}
+export interface Lead{id:string;contactId:string;companyId?:string;source:string;score:number;temperature:number|string;status:string;estimatedValue?:number;intentSummary:string}
+export interface Opportunity{id:string;leadId?:string;companyId?:string;contactId?:string;pipelineStageId?:string;name:string;amount:number;status:number|string;expectedCloseUtc?:string}
+export interface Conversation{id:string;contactId?:string;leadId?:string;channelId?:string;status:number|string;assignedUserId?:string;aiEnabled:boolean;lastMessageAtUtc:string}
+export interface Message{id:string;conversationId:string;senderType:string;text:string;createdAtUtc:string}
+export interface Ticket{id:string;number:string;subject:string;description:string;status:number|string;priority:number|string;assignedUserId?:string;firstResponseDueUtc?:string;resolutionDueUtc?:string}
+export interface AiAgent{id:string;name:string;role:string;instructions:string;tone:string;model:string;languagesCsv:string;active:boolean;knowledgeBaseId?:string}
+export interface KnowledgeDocument{id:string;knowledgeBaseId:string;title:string;body:string;version:number;published:boolean}
+export interface AutomationRule{id:string;name:string;trigger:string;conditionsJson:string;actionsJson:string;active:boolean}
+export interface IntegrationConnection{id:string;provider:string;name:string;status:string;enabled:boolean;settingsJson:string}

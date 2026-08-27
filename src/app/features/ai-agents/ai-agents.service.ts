@@ -1,0 +1,2 @@
+import { Injectable } from '@angular/core';import { ApiService } from '../../core/api.service';import { AiAgent } from '../../core/models/platform.models';
+@Injectable({providedIn:'root'}) export class AiAgentsService{constructor(private api:ApiService){}list(){return this.api.get<AiAgent[]>('ai/agents')}tools(){return this.api.get<string[]>('ai/tools')}create(x:any){return this.api.post<AiAgent>('ai/agents',x)}update(id:string,x:any){return this.api.put<AiAgent>(`ai/agents/${id}`,x)}test(id:string,message:string){return this.api.post<any>(`ai/agents/${id}/test`,{message})}}

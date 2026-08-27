@@ -1,0 +1,2 @@
+import { Injectable } from '@angular/core';import { ApiService } from '../../core/api.service';
+@Injectable({providedIn:'root'}) export class WorkflowsService{constructor(private api:ApiService){}list(){return this.api.get<any[]>('workflows')}create(x:any){return this.api.post<any>('workflows',x)}designer(id:string){return this.api.get<any>(`workflows/${id}/designer`)}saveDesigner(id:string,x:any){return this.api.put<any>(`workflows/${id}/designer`,x)}}
