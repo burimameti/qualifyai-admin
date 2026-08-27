@@ -1,0 +1,16 @@
+name: qualifyai-admin
+
+services:
+  admin-ui:
+    image: ${REGISTRY:-qualifyai}/admin-ui:${TAG:-latest}
+    container_name: qualifyai-admin-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks: [qualifyai]
+    restart: unless-stopped
+
+networks:
+  qualifyai:
+    external: true
+    name: qualifyai-network
