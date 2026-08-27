@@ -1,3 +1,233 @@
-import { CommonModule } from '@angular/common';import { Component,OnInit } from '@angular/core';import { FormsModule } from '@angular/forms';import { AiAgent } from '../../core/models/platform.models';import { Modal,PageHeader } from '../../shared/ui';import { AiAgentsService } from './ai-agents.service';
-@Component({standalone:true,imports:[CommonModule,FormsModule,Modal,PageHeader],template:`<qai-page-header title="AI Agent Studio" subtitle="Configure autonomous support, qualification and revenue actions."><select [(ngModel)]="selectedId" (change)="selectAgent()"><option *ngFor="let a of agents" [value]="a.id">{{a.name}}</option></select><button (click)="newOpen=true">+ Agent</button><button class="primary" (click)="save()">Save & publish</button></qai-page-header><div class="studio"><aside><div class="agent-avatar">✦</div><h3>{{agent.name||'Revenue AI'}}</h3><p>{{agent.role||'Support & Sales'}}</p><nav><button [class.active]="tab==='behavior'" (click)="tab='behavior'">Behavior</button><button [class.active]="tab==='tools'" (click)="tab='tools'">Tools & actions</button><button [class.active]="tab==='model'" (click)="tab='model'">Model</button><button [class.active]="tab==='guardrails'" (click)="tab='guardrails'">Guardrails</button></nav></aside><section class="panel form" *ngIf="tab==='behavior'"><h3>Agent behavior</h3><div class="form2"><label>Name<input [(ngModel)]="agent.name"></label><label>Role<input [(ngModel)]="agent.role"></label></div><label>Instructions<textarea class="large" [(ngModel)]="agent.instructions"></textarea></label><div class="form2"><label>Tone<select [(ngModel)]="agent.tone"><option>professional</option><option>friendly</option><option>concise</option></select></label><label>Languages<input [(ngModel)]="agent.languagesCsv"></label></div><label class="checkline"><input type="checkbox" [(ngModel)]="agent.active"> Agent active</label></section><section class="panel" *ngIf="tab==='tools'"><h3>Tools & actions</h3><p>Actions available to the AI runtime after tenant and permission checks.</p><div class="tools"><article *ngFor="let t of tools"><i>⚡</i><div><b>{{t}}</b><span>{{desc(t)}}</span></div><span class="pill success">Enabled</span></article></div></section><section class="panel form" *ngIf="tab==='model'"><h3>Model routing</h3><label>Primary model<select [(ngModel)]="agent.model"><option>local</option><option>gpt-5</option><option>azure-openai</option></select></label><p class="muted">External models require provider credentials in production configuration.</p></section><section class="panel form" *ngIf="tab==='guardrails'"><h3>Guardrails</h3><label>Operational policy<textarea [(ngModel)]="guardrails"></textarea></label></section><aside class="test"><header><b>Agent test</b><span>Sandbox</span></header><div class="testmsgs"><p class="user" *ngIf="prompt">{{prompt}}</p><p class="bot" *ngIf="answer"><b>{{agent.name}}</b>{{answer}}</p></div><textarea [(ngModel)]="prompt" placeholder="Test a customer message"></textarea><button class="primary" (click)="runTest()">Run test</button></aside></div><qai-modal [open]="newOpen" title="New AI agent" (close)="newOpen=false"><form class="form" (ngSubmit)="create()"><label>Name<input [(ngModel)]="newAgent.name" name="name" required></label><label>Role<input [(ngModel)]="newAgent.role" name="role"></label><footer><button type="button" (click)="newOpen=false">Cancel</button><button class="primary" type="submit">Create agent</button></footer></form></qai-modal>`})
-export class AiAgentsPage implements OnInit{agents:AiAgent[]=[];selectedId='';agent:any={name:'Revenue AI',role:'Support & Sales',instructions:'Resolve support questions from verified knowledge. Detect buying intent, collect qualification data, score leads and trigger approved revenue actions.',tone:'professional',languagesCsv:'en,de,it,mk',model:'local',active:true};tab='behavior';prompt='We need weekly transport of 18 pallets from Stuttgart to Milan.';answer='';tools:string[]=[];newOpen=false;newAgent:any={name:'New AI Agent',role:'Support & Sales',tone:'professional',model:'local',languagesCsv:'en',active:true,instructions:''};guardrails='Never invent pricing. Never expose private customer data. Escalate when confidence is low.';constructor(private data:AiAgentsService){}ngOnInit(){this.data.list().subscribe(r=>{this.agents=r;if(r.length){this.selectedId=r[0].id;this.selectAgent()}});this.data.tools().subscribe(r=>this.tools=r)}selectAgent(){const x=this.agents.find(a=>a.id===this.selectedId);if(x)this.agent={...x}}save(){const op=this.agent.id?this.data.update(this.agent.id,this.agent):this.data.create(this.agent);op.subscribe(r=>{this.agent=r;const i=this.agents.findIndex(a=>a.id===r.id);i>=0?this.agents[i]=r:this.agents.push(r);alert('Agent configuration published.')})}create(){this.data.create(this.newAgent).subscribe(r=>{this.agents.push(r);this.selectedId=r.id;this.agent={...r};this.newOpen=false})}runTest(){if(!this.prompt.trim()||!this.agent.id)return;this.answer='Thinking…';this.data.test(this.agent.id,this.prompt).subscribe({next:r=>this.answer=r.message||'No response',error:()=>this.answer='Agent test failed. Check API/provider configuration.'})}desc(t:string){const d:any={SearchKnowledge:'Retrieve grounded answers',CreateLead:'Capture sales demand',CreateTicket:'Open a support case',CreateOpportunity:'Create pipeline revenue',BookMeeting:'Schedule a sales call',CallWebhook:'Execute external workflow'};return d[t]||'Business action'}}
+import { CommonModule } from "@angular/common";
+import { Component, OnInit } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { AiAgent } from "../../core/models/platform.models";
+import { Modal, PageHeader } from "../../shared/ui";
+import { AiAgentsService } from "./ai-agents.service";
+@Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, Modal, PageHeader],
+  template: `<qai-page-header
+      title="AI Agent Studio"
+      subtitle="Configure autonomous support, qualification and revenue actions."
+      ><select [(ngModel)]="selectedId" (change)="selectAgent()">
+        <option *ngFor="let a of agents" [value]="a.id">
+          {{ a.name }}
+        </option></select
+      ><button (click)="newOpen = true">+ Agent</button
+      ><button class="primary" (click)="save()">
+        Save & publish
+      </button></qai-page-header
+    >
+    <div class="studio">
+      <aside>
+        <div class="agent-avatar">✦</div>
+        <h3>{{ agent.name || "Revenue AI" }}</h3>
+        <p>{{ agent.role || "Support & Sales" }}</p>
+        <nav>
+          <button
+            [class.active]="tab === 'behavior'"
+            (click)="tab = 'behavior'"
+          >
+            Behavior</button
+          ><button [class.active]="tab === 'tools'" (click)="tab = 'tools'">
+            Tools & actions</button
+          ><button [class.active]="tab === 'model'" (click)="tab = 'model'">
+            Model</button
+          ><button
+            [class.active]="tab === 'guardrails'"
+            (click)="tab = 'guardrails'"
+          >
+            Guardrails
+          </button>
+        </nav>
+      </aside>
+      <section class="panel form" *ngIf="tab === 'behavior'">
+        <h3>Agent behavior</h3>
+        <div class="form2">
+          <label>Name<input [(ngModel)]="agent.name" /></label
+          ><label>Role<input [(ngModel)]="agent.role" /></label>
+        </div>
+        <label
+          >Instructions<textarea
+            class="large"
+            [(ngModel)]="agent.instructions"
+          ></textarea>
+        </label>
+        <div class="form2">
+          <label
+            >Tone<select [(ngModel)]="agent.tone">
+              <option>professional</option>
+              <option>friendly</option>
+              <option>concise</option>
+            </select></label
+          ><label>Languages<input [(ngModel)]="agent.languagesCsv" /></label>
+        </div>
+        <label class="checkline"
+          ><input type="checkbox" [(ngModel)]="agent.active" /> Agent
+          active</label
+        >
+      </section>
+      <section class="panel" *ngIf="tab === 'tools'">
+        <h3>Tools & actions</h3>
+        <p>
+          Actions available to the AI runtime after tenant and permission
+          checks.
+        </p>
+        <div class="tools">
+          <article *ngFor="let t of tools">
+            <i>⚡</i>
+            <div>
+              <b>{{ t }}</b
+              ><span>{{ desc(t) }}</span>
+            </div>
+            <span class="pill success">Enabled</span>
+          </article>
+        </div>
+      </section>
+      <section class="panel form" *ngIf="tab === 'model'">
+        <h3>Model routing</h3>
+        <label
+          >Primary model<select [(ngModel)]="agent.model">
+            <option>local</option>
+            <option>gpt-5</option>
+            <option>azure-openai</option>
+          </select></label
+        >
+        <p class="muted">
+          External models require provider credentials in production
+          configuration.
+        </p>
+      </section>
+      <section class="panel form" *ngIf="tab === 'guardrails'">
+        <h3>Guardrails</h3>
+        <label
+          >Operational policy<textarea [(ngModel)]="guardrails"></textarea>
+        </label>
+      </section>
+      <aside class="test">
+        <header><b>Agent test</b><span>Sandbox</span></header>
+        <div class="testmsgs">
+          <p class="user" *ngIf="prompt">{{ prompt }}</p>
+          <p class="bot" *ngIf="answer">
+            <b>{{ agent.name }}</b
+            >{{ answer }}
+          </p>
+        </div>
+        <textarea
+          [(ngModel)]="prompt"
+          placeholder="Test a customer message"
+        ></textarea
+        ><button class="primary" (click)="runTest()">Run test</button>
+      </aside>
+    </div>
+    <qai-modal [open]="newOpen" title="New AI agent" (close)="newOpen = false"
+      ><form class="form" (ngSubmit)="create()">
+        <label
+          >Name<input [(ngModel)]="newAgent.name" name="name" required /></label
+        ><label>Role<input [(ngModel)]="newAgent.role" name="role" /></label>
+        <footer>
+          <button type="button" (click)="newOpen = false">Cancel</button
+          ><button class="primary" type="submit">Create agent</button>
+        </footer>
+      </form></qai-modal
+    >`,
+})
+export class AiAgentsPage implements OnInit {
+  agents: AiAgent[] = [];
+  selectedId = "";
+  agent: any = {
+    name: "Revenue AI",
+    role: "Support & Sales",
+    instructions:
+      "Resolve support questions from verified knowledge. Detect buying intent, collect qualification data, score leads and trigger approved revenue actions.",
+    tone: "professional",
+    languagesCsv: "en,de,it,mk",
+    model: "local",
+    active: true,
+  };
+  tab = "behavior";
+  prompt = "We need weekly transport of 18 pallets from Stuttgart to Milan.";
+  answer = "";
+  tools: string[] = [];
+  newOpen = false;
+  newAgent: any = {
+    name: "New AI Agent",
+    role: "Support & Sales",
+    tone: "professional",
+    model: "local",
+    languagesCsv: "en",
+    active: true,
+    instructions: "Answer from verified knowledge, qualify demand and escalate when confidence is low.",
+  };
+  guardrails =
+    "Never invent pricing. Never expose private customer data. Escalate when confidence is low.";
+  constructor(private data: AiAgentsService) {}
+  ngOnInit() {
+    this.data.list().subscribe((r) => {
+      this.agents = r;
+      if (r.length) {
+        this.selectedId = r[0].id;
+        this.selectAgent();
+      }
+    });
+    this.data.tools().subscribe((r) => (this.tools = r));
+  }
+  selectAgent() {
+    const x = this.agents.find((a) => a.id === this.selectedId);
+    if (x) this.agent = { ...x };
+  }
+  save() {
+    if (!this.agent.name?.trim() || !this.agent.instructions?.trim()) {
+      alert("Agent name and instructions are required.");
+      return;
+    }
+    const op = this.agent.id
+      ? this.data.update(this.agent.id, this.agent)
+      : this.data.create(this.agent);
+    op.subscribe((r) => {
+      this.agent = r;
+      const i = this.agents.findIndex((a) => a.id === r.id);
+      i >= 0 ? (this.agents[i] = r) : this.agents.push(r);
+      alert("Agent configuration published.");
+    });
+  }
+  create() {
+    if (!this.newAgent.name?.trim() || !this.newAgent.instructions?.trim()) {
+      alert("Agent name and instructions are required.");
+      return;
+    }
+    this.data.create(this.newAgent).subscribe({
+      next: (r) => {
+        this.agents.push(r);
+        this.selectedId = r.id;
+        this.agent = { ...r };
+        this.newOpen = false;
+      },
+      error: (e) => alert(e?.error?.error || "AI agent could not be created."),
+    });
+  }
+  runTest() {
+    if (!this.prompt.trim() || !this.agent.id) return;
+    this.answer = "Thinking…";
+    this.data
+      .test(this.agent.id, this.prompt)
+      .subscribe({
+        next: (r) => (this.answer = r.message || "No response"),
+        error: () =>
+          (this.answer =
+            "Agent test failed. Check API/provider configuration."),
+      });
+  }
+  desc(t: string) {
+    const d: any = {
+      SearchKnowledge: "Retrieve grounded answers",
+      CreateLead: "Capture sales demand",
+      CreateTicket: "Open a support case",
+      CreateOpportunity: "Create pipeline revenue",
+      BookMeeting: "Schedule a sales call",
+      CallWebhook: "Execute external workflow",
+    };
+    return d[t] || "Business action";
+  }
+}
