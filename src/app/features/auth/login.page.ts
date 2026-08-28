@@ -11,14 +11,14 @@ import { AuthService } from "../../core/auth.service";
     <section class="login-hero">
       <div class="brand">✦ QualifyAI</div>
       <div>
-        <span>AI CUSTOMER OPERATIONS</span>
+        <span>BUSINESS AUTOMATION PLATFORM</span>
         <h1>Support customers. Qualify demand. Automate revenue.</h1>
         <p>
-          One operating system for AI service, sales qualification, CRM,
+          One operating system for customer service, sales qualification, CRM,
           workflow automation and revenue intelligence.
         </p>
         <div class="proof">
-          <b>73.6%<small>AI resolution</small></b
+          <b>73.6%<small>Automated resolution</small></b
           ><b>€184k<small>Pipeline influenced</small></b
           ><b>4.7/5<small>CSAT</small></b>
         </div>

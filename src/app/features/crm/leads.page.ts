@@ -8,7 +8,7 @@ import { Modal,PageHeader } from '../../shared/ui';
   standalone:true,
   imports:[CommonModule,FormsModule,Modal,PageHeader],
   template:`
-    <qai-page-header title="Leads" subtitle="AI-qualified demand ranked by intent, fit and buying readiness.">
+    <qai-page-header title="Leads" subtitle="Automatically qualified demand ranked by intent, fit and buying readiness.">
       <button (click)="runAutomation()">⚡ Run sales automation</button>
       <button class="primary" (click)="openCreate()">+ Create lead</button>
     </qai-page-header>

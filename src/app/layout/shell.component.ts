@@ -19,7 +19,7 @@ interface NavigationItem {
   template:`<div class="shell"><aside><div class="brand">✦ <span>QualifyAI</span><small>ENTERPRISE</small></div><div class="workspace"><i>{{initials(workspaceName)}}</i><div><b>{{workspaceName}}</b><span>{{session?.licensePlan||'Licensed'}} workspace</span></div></div><nav><ng-container *ngFor="let group of visibleGroups"><label>{{group}}</label><a *ngFor="let item of navBy(group)" [routerLink]="item.url" routerLinkActive="active"><span>{{item.icon}}</span>{{item.label}}</a></ng-container></nav><div class="side-bottom"><div class="usage"><span>License plan</span><b>{{session?.licensePlan||'—'}}</b><i><u></u></i></div><button type="button" (click)="logout()">{{initials(session?.name||session?.email||'User')}} <span>{{session?.name||session?.email||'User'}}<small>{{primaryRole}}</small></span>↗</button></div></aside><main><header><div class="search">⌕ <input aria-label="Global search" placeholder="Search customers, conversations, tickets…"><kbd>Ctrl K</kbd></div><div class="head-actions"><button type="button" aria-label="Help">?</button><button type="button" aria-label="Notifications">♢</button><div class="avatar">{{initials(session?.name||session?.email||'User')}}</div></div></header><section class="page"><router-outlet/></section></main></div>`
 })
 export class ShellComponent {
-  readonly groups=['OVERVIEW','CUSTOMERS','REVENUE','AI & AUTOMATION','PLATFORM'];
+  readonly groups=['OVERVIEW','CUSTOMERS','REVENUE','BUSINESS AUTOMATION','PLATFORM'];
   readonly nav:NavigationItem[]=[
     {group:'OVERVIEW',label:'Dashboard',url:'/dashboard',icon:'⌂',module:'analytics',permission:'analytics.read'},
     {group:'CUSTOMERS',label:'Inbox',url:'/inbox',icon:'▱',module:'inbox',permission:'conversations.read'},
@@ -30,12 +30,12 @@ export class ShellComponent {
     {group:'REVENUE',label:'Opportunities',url:'/crm/opportunities',icon:'◈',module:'crm',permission:'crm.read'},
     {group:'REVENUE',label:'Pipeline',url:'/pipeline',icon:'▤',module:'crm',permission:'crm.read'},
     {group:'REVENUE',label:'Meetings',url:'/meetings',icon:'◷',module:'crm',permission:'crm.read'},
-    {group:'AI & AUTOMATION',label:'AI Agents',url:'/ai/agents',icon:'✦',module:'ai',permission:'agents.read'},
-    {group:'AI & AUTOMATION',label:'Knowledge',url:'/knowledge',icon:'▥',module:'knowledge',permission:'knowledge.read'},
-    {group:'AI & AUTOMATION',label:'Knowledge Gaps',url:'/knowledge/gaps',icon:'△',module:'knowledge',permission:'knowledge.read'},
-    {group:'AI & AUTOMATION',label:'Workflows',url:'/workflows',icon:'⌁',module:'automation',permission:'automation.read'},
-    {group:'AI & AUTOMATION',label:'Automations',url:'/automations',icon:'⚡',module:'automation',permission:'automation.read'},
-    {group:'AI & AUTOMATION',label:'Evaluations',url:'/evaluations',icon:'✓',module:'ai',permission:'agents.read'},
+    {group:'BUSINESS AUTOMATION',label:'Business Assistants',url:'/ai/agents',icon:'✦',module:'ai',permission:'agents.read'},
+    {group:'BUSINESS AUTOMATION',label:'Knowledge',url:'/knowledge',icon:'▥',module:'knowledge',permission:'knowledge.read'},
+    {group:'BUSINESS AUTOMATION',label:'Knowledge Gaps',url:'/knowledge/gaps',icon:'△',module:'knowledge',permission:'knowledge.read'},
+    {group:'BUSINESS AUTOMATION',label:'Workflows',url:'/workflows',icon:'⌁',module:'automation',permission:'automation.read'},
+    {group:'BUSINESS AUTOMATION',label:'Automations',url:'/automations',icon:'⚡',module:'automation',permission:'automation.read'},
+    {group:'BUSINESS AUTOMATION',label:'Evaluations',url:'/evaluations',icon:'✓',module:'ai',permission:'agents.read'},
     {group:'PLATFORM',label:'Integrations',url:'/integrations',icon:'↗',module:'integrations',permission:'integrations.read'},
     {group:'PLATFORM',label:'Analytics & ROI',url:'/analytics',icon:'▥',module:'analytics',permission:'analytics.read'},
     {group:'PLATFORM',label:'Billing & Usage',url:'/billing',icon:'€',module:'billing',permission:'billing.read'},

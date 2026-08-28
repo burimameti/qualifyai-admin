@@ -9,7 +9,7 @@ import { KnowledgeService } from "./knowledge.service";
   imports: [CommonModule, FormsModule, Modal, PageHeader],
   template: `<qai-page-header
       title="Knowledge"
-      subtitle="Ground AI answers in company documents, websites, FAQs and operational data."
+      subtitle="Ground automated answers in company documents, websites, FAQs and operational data."
       ><button (click)="testOpen = true">Test retrieval</button
       ><button class="primary" (click)="open()">
         + Add knowledge
@@ -85,7 +85,7 @@ import { KnowledgeService } from "./knowledge.service";
           ></textarea></label
         ><label class="checkline"
           ><input type="checkbox" [(ngModel)]="form.published" name="pub" />
-          Published for AI retrieval</label
+          Published for automated retrieval</label
         >
         <footer>
           <button type="button" (click)="show = false">Cancel</button

@@ -8,7 +8,7 @@ import { AiAgentsService } from "./ai-agents.service";
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
   template: `<qai-page-header
-      title="AI Agent Studio"
+      title="Business Assistant Studio"
       subtitle="Configure autonomous support, qualification and revenue actions."
       ><select [(ngModel)]="selectedId" (change)="selectAgent()">
         <option *ngFor="let a of agents" [value]="a.id">
@@ -22,7 +22,7 @@ import { AiAgentsService } from "./ai-agents.service";
     <div class="studio">
       <aside>
         <div class="agent-avatar">✦</div>
-        <h3>{{ agent.name || "Revenue AI" }}</h3>
+        <h3>{{ agent.name || "Revenue Assistant" }}</h3>
         <p>{{ agent.role || "Support & Sales" }}</p>
         <nav>
           <button
@@ -71,7 +71,7 @@ import { AiAgentsService } from "./ai-agents.service";
       <section class="panel" *ngIf="tab === 'tools'">
         <h3>Tools & actions</h3>
         <p>
-          Actions available to the AI runtime after tenant and permission
+          Actions available to the workflow runtime after tenant and permission
           checks.
         </p>
         <div class="tools">
@@ -121,7 +121,7 @@ import { AiAgentsService } from "./ai-agents.service";
         ><button class="primary" (click)="runTest()">Run test</button>
       </aside>
     </div>
-    <qai-modal [open]="newOpen" title="New AI agent" (close)="newOpen = false"
+    <qai-modal [open]="newOpen" title="New business assistant" (close)="newOpen = false"
       ><form class="form" (ngSubmit)="create()">
         <label
           >Name<input [(ngModel)]="newAgent.name" name="name" required /></label
@@ -137,7 +137,7 @@ export class AiAgentsPage implements OnInit {
   agents: AiAgent[] = [];
   selectedId = "";
   agent: any = {
-    name: "Revenue AI",
+    name: "Revenue Assistant",
     role: "Support & Sales",
     instructions:
       "Resolve support questions from verified knowledge. Detect buying intent, collect qualification data, score leads and trigger approved revenue actions.",
@@ -152,7 +152,7 @@ export class AiAgentsPage implements OnInit {
   tools: string[] = [];
   newOpen = false;
   newAgent: any = {
-    name: "New AI Agent",
+    name: "New Business Assistant",
     role: "Support & Sales",
     tone: "professional",
     model: "local",
@@ -204,7 +204,7 @@ export class AiAgentsPage implements OnInit {
         this.agent = { ...r };
         this.newOpen = false;
       },
-      error: (e) => alert(e?.error?.error || "AI agent could not be created."),
+      error: (e) => alert(e?.error?.error || "Business assistant could not be created."),
     });
   }
   runTest() {

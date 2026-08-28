@@ -26,6 +26,11 @@ import { WorkflowsService } from "./workflows.service";
           >{{ n.label }}
         </button>
         <hr />
+        <b>LOGISTICS STARTERS</b>
+        <button *ngFor="let starter of starters" (click)="installStarter(starter)">
+          <span>▦</span>{{ starter.name }}
+        </button>
+        <hr />
         <button (click)="connectSelected()" [disabled]="!selected">
           Connect selected → last node
         </button>
@@ -97,6 +102,39 @@ export class WorkflowsPage implements OnInit {
     { type: "meeting", label: "Book meeting", icon: "◷" },
     { type: "handoff", label: "Human handoff", icon: "↗" },
   ];
+  starters = [
+    {
+      name: "Freight RFQ → sales",
+      nodes: [
+        ["start", "Inbound freight request", { event: "inquiry.received", channel: "web,email" }],
+        ["question", "Capture shipment details", { question: "Collect origin, destination, cargo, weight, frequency and target pickup date" }],
+        ["condition", "Check commercial fit", { condition: "Supported lane, valid cargo and pickup within 30 days" }],
+        ["score", "Prioritize opportunity", { action: "Score by recurring volume, margin band, urgency and company fit" }],
+        ["action", "Create quote opportunity", { action: "Create CRM opportunity and pricing task with shipment context" }],
+        ["handoff", "Assign sales owner", { action: "Route high-value RFQ to the lane owner and notify sales" }],
+      ]
+    },
+    {
+      name: "Shipment delay response",
+      nodes: [
+        ["start", "Delay event received", { event: "shipment.delay.detected" }],
+        ["condition", "Assess customer impact", { condition: "Delay exceeds SLA or affects a priority account" }],
+        ["action", "Notify customer", { action: "Send status, revised ETA and recovery options" }],
+        ["action", "Create operations ticket", { action: "Open an exception ticket with shipment and carrier data" }],
+        ["handoff", "Escalate exception", { action: "Assign severe cases to operations management" }],
+      ]
+    },
+    {
+      name: "Dormant customer reactivation",
+      nodes: [
+        ["start", "Account inactivity", { event: "customer.no_booking_60_days" }],
+        ["condition", "Check account value", { condition: "Previous revenue and lane activity exceed threshold" }],
+        ["action", "Prepare account brief", { action: "Summarize previous lanes, volume, rates and service issues" }],
+        ["action", "Create sales follow-up", { action: "Create owner task with a tailored reactivation offer" }],
+        ["meeting", "Schedule account review", { action: "Offer available meeting times to the customer" }],
+      ]
+    }
+  ];
   constructor(private data: WorkflowsService) {}
   ngOnInit() {
     this.load();
@@ -126,6 +164,39 @@ export class WorkflowsPage implements OnInit {
       this.edges = [];
       this.newName = "";
       this.newOpen = false;
+    });
+  }
+  installStarter(starter: any) {
+    this.data.create({ name: starter.name, active: true }).subscribe({
+      next: (flow) => {
+        const nodes = starter.nodes.map((definition: any[], index: number) => ({
+          id: crypto.randomUUID(),
+          flowId: flow.id,
+          nodeKey: index === 0 ? "start" : `step_${index}`,
+          type: definition[0],
+          configJson: JSON.stringify({ title: definition[1], ...definition[2] }),
+          x: 100 + (index % 3) * 260,
+          y: 90 + Math.floor(index / 3) * 180,
+        }));
+        const edges = nodes.slice(1).map((node: any, index: number) => ({
+          id: crypto.randomUUID(),
+          flowId: flow.id,
+          fromNodeKey: nodes[index].nodeKey,
+          toNodeKey: node.nodeKey,
+          conditionJson: "{}",
+        }));
+        this.data.saveDesigner(flow.id, { nodes, edges }).subscribe({
+          next: () => {
+            this.flows.push(flow);
+            this.activeId = flow.id;
+            this.nodes = nodes;
+            this.edges = edges;
+            this.selected = nodes[0];
+          },
+          error: () => alert("The workflow was created, but its steps could not be saved."),
+        });
+      },
+      error: () => alert("The workflow starter could not be installed."),
     });
   }
   loadDesigner() {
@@ -222,7 +293,7 @@ export class WorkflowsPage implements OnInit {
   nodeText(n: any) {
     try {
       const c = JSON.parse(n.configJson || "{}");
-      return c.question || c.action || c.condition || "Configure this node";
+      return c.title || c.question || c.action || c.condition || "Configure this node";
     } catch {
       return "Configure this node";
     }
