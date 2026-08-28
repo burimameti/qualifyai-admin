@@ -46,7 +46,7 @@ import { AuthService } from "../../core/auth.service";
       </button>
       <div class="error" *ngIf="error">{{ error }}</div>
       <div class="demo">
-        <b>Demo</b><span>demo · admin&#64;demo.local · Admin123!</span>
+        <b>Demo</b><span>demo · admin&#64;demo.local · Admin123!ChangeMe</span>
       </div>
     </form>
   </div>`,
@@ -54,7 +54,7 @@ import { AuthService } from "../../core/auth.service";
 export class LoginPage {
   tenant = "demo";
   email = "admin@demo.local";
-  password = "Admin123!";
+  password = "Admin123!ChangeMe";
   mfaCode = "";
   mfaRequired = false;
   submitting = false;
