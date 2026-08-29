@@ -10,7 +10,7 @@ import { AutomationsService } from "./automations.service";
   template: `<qai-page-header
       title="Automations"
       subtitle="Turn customer and sales signals into automated revenue actions."
-      ><button (click)="runAll()">▶ Run sales engine</button
+      ><button (click)="installScenarios()" [disabled]="installing">{{installing?'Installing…':'Install realistic scenarios'}}</button><button (click)="runAll()">▶ Run sales engine</button
       ><button class="primary" (click)="open()">
         + New automation
       </button></qai-page-header
@@ -98,6 +98,7 @@ export class AutomationsPage implements OnInit {
   runs: any[] = [];
   show = false;
   lastRun = "Never";
+  installing = false;
   form: any = {
     name: "Hot lead → pipeline",
     trigger: "lead.qualified",
@@ -179,4 +180,5 @@ export class AutomationsPage implements OnInit {
       );
     });
   }
+  installScenarios(){this.installing=true;this.data.installScenarios().subscribe({next:r=>{this.installing=false;this.load();alert(`${r.scenario} installed in SQL: ${r.prospects} prospects, ${r.campaigns} campaigns, ${r.opportunities} opportunities, ${r.meetings} meetings, ${r.tickets} tickets and ${r.automations} automations.`)},error:e=>{this.installing=false;alert(e?.error?.detail||'Scenarios could not be installed.')}})}
 }
