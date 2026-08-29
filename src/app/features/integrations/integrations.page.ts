@@ -1,3 +1,183 @@
-import { CommonModule } from '@angular/common';import { Component,OnInit } from '@angular/core';import { FormsModule } from '@angular/forms';import { Modal,PageHeader } from '../../shared/ui';import { IntegrationsService } from './integrations.service';
-@Component({standalone:true,imports:[CommonModule,FormsModule,Modal,PageHeader],template:`<qai-page-header title="Integrations" subtitle="Connect CRM, calendar, messaging and operational systems."><button (click)="load()">↻ Refresh</button></qai-page-header><div class="grid2"><section class="panel"><header><div><b>Verified email senders</b><span>Required before any outreach can leave the platform</span></div></header><div class="gap" *ngFor="let s of senders"><div><b>{{s.name}}</b><span>{{s.status===1?'Verified':'Verification required'}}</span></div><button *ngIf="s.status!==1" (click)="verify(s)">Verify</button></div><form class="form" (ngSubmit)="addSender()"><div class="form2"><label>Sender name<input [(ngModel)]="sender.name" name="senderName"></label><label>Sender email<input type="email" [(ngModel)]="sender.email" name="senderEmail" required></label></div><label>Provider<select [(ngModel)]="sender.provider" name="senderProvider"><option>smtp</option><option>sendgrid</option></select></label><button class="primary" type="submit">Configure sender</button></form></section><section class="panel"><header><div><b>Suppression list</b><span>Prevent outreach to opted-out recipients</span></div></header><form class="form" (ngSubmit)="suppress()"><label>Email<input type="email" [(ngModel)]="suppression.email" name="suppressEmail" required></label><label>Reason<input [(ngModel)]="suppression.reason" name="reason"></label><button type="submit">Add suppression</button></form></section></div><div class="integration-grid"><article *ngFor="let p of providers"><i>{{logo(p)}}</i><div><b>{{p}}</b><span>{{desc(p)}}</span></div><span class="pill success" *ngIf="connection(p)">Configured</span><button (click)="open(p)">{{connection(p)?'Configure':'Connect'}}</button><button *ngIf="connection(p)" (click)="test(connection(p))">Test</button></article></div><qai-modal [open]="show" [title]="provider+' integration'" (close)="show=false"><form class="form" (ngSubmit)="save()"><label>Name<input [(ngModel)]="form.name" name="name"></label><label>Settings JSON<textarea class="large" [(ngModel)]="form.settingsJson" name="settings"></textarea></label><p class="muted">OAuth/API secrets are stored outside this JSON.</p><footer><button type="button" (click)="show=false">Cancel</button><button class="primary" type="submit">Save connection</button></footer></form></qai-modal>`})
-export class IntegrationsPage implements OnInit{providers:string[]=['HubSpot','Salesforce','Pipedrive','Slack','Microsoft Teams','Google Calendar','Microsoft 365','Generic Webhook'];connections:any[]=[];senders:any[]=[];sender:any={name:'Sales team',email:'',provider:'smtp'};suppression:any={email:'',reason:'manual-suppression'};show=false;provider='';form:any={};constructor(private data:IntegrationsService){}ngOnInit(){this.load()}load(){this.data.list().subscribe(r=>this.connections=r);this.data.senders().subscribe(r=>this.senders=r);this.data.providers().subscribe({next:r=>{if(r?.length)this.providers=r.map((x:any)=>typeof x==='string'?x:x.name||x.provider)},error:()=>{}})}addSender(){this.data.configureSender(this.sender).subscribe(r=>{this.load();alert(`Sender configured. Verification token: ${r.verificationToken}`)})}verify(s:any){const token=prompt('Verification token');if(token)this.data.verifySender(s.id,token).subscribe({next:()=>this.load(),error:e=>alert(e?.error?.detail||'Verification failed.')})}suppress(){this.data.suppress(this.suppression.email,this.suppression.reason).subscribe(()=>{alert('Recipient suppressed.');this.suppression.email=''})}connection(p:string){return this.connections.find(x=>String(x.provider).toLowerCase()===p.toLowerCase())}open(p:string){this.provider=p;const c=this.connection(p);this.form=c?{...c}:{provider:p,name:p+' connection',status:1,settingsJson:'{}',secretReference:''};this.show=true}save(){const op=this.form.id?this.data.update(this.form.id,this.form):this.data.create(this.form);op.subscribe(r=>{const i=this.connections.findIndex(x=>x.id===r.id);i>=0?this.connections[i]=r:this.connections.push(r);this.show=false})}test(c:any){this.data.test(c.id).subscribe({next:r=>alert(`${c.provider}: ${r.success?'connection OK':'test failed'}`),error:()=>alert('Integration test failed.')})}logo(p:string){return p.split(' ').map(x=>x[0]).join('').slice(0,2)}desc(p:string){return p.includes('Calendar')?'Book meetings automatically':p==='Slack'||p.includes('Teams')?'Notify sales and support teams':p.includes('Webhook')?'Connect any external API':'Sync contacts, leads and opportunities'}}
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Modal, PageHeader } from '../../shared/ui';
+import { IntegrationsService } from './integrations.service';
+@Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, Modal, PageHeader],
+  template: `<qai-page-header
+      title="Integrations"
+      subtitle="Connect CRM, calendar, messaging and operational systems."
+      ><button (click)="load()">↻ Refresh</button></qai-page-header
+    >
+    <div class="grid2">
+      <section class="panel">
+        <header>
+          <div>
+            <b>Verified email senders</b><span>Required before any outreach can leave the platform</span>
+          </div>
+        </header>
+        <div class="gap" *ngFor="let s of senders">
+          <div>
+            <b>{{ s.name }}</b
+            ><span
+              >{{ s.provider | uppercase }} ·
+              {{ s.status === 1 ? 'Verified' : 'Verification required' }}</span
+            >
+          </div>
+          <button *ngIf="s.status !== 1" (click)="verify(s)">
+            {{ s.provider === 'brevo' ? 'Check verification' : 'Verify' }}
+          </button>
+        </div>
+        <form class="form" (ngSubmit)="addSender()">
+          <div class="form2">
+            <label>Sender name<input [(ngModel)]="sender.name" name="senderName" /></label
+            ><label
+              >Sender email<input type="email" [(ngModel)]="sender.email" name="senderEmail" required
+            /></label>
+          </div>
+          <label
+            >Provider<select [(ngModel)]="sender.provider" name="senderProvider">
+              <option value="brevo">Brevo (recommended)</option>
+              <option>smtp</option>
+              <option>sendgrid</option>
+            </select></label
+          ><button class="primary" type="submit">Configure sender</button>
+        </form>
+      </section>
+      <section class="panel">
+        <header>
+          <div><b>Suppression list</b><span>Prevent outreach to opted-out recipients</span></div>
+        </header>
+        <form class="form" (ngSubmit)="suppress()">
+          <label
+            >Email<input type="email" [(ngModel)]="suppression.email" name="suppressEmail" required /></label
+          ><label>Reason<input [(ngModel)]="suppression.reason" name="reason" /></label
+          ><button type="submit">Add suppression</button>
+        </form>
+      </section>
+    </div>
+    <div class="integration-grid">
+      <article *ngFor="let p of providers">
+        <i>{{ logo(p) }}</i>
+        <div>
+          <b>{{ p }}</b
+          ><span>{{ desc(p) }}</span>
+        </div>
+        <span class="pill success" *ngIf="connection(p)">Configured</span
+        ><button (click)="open(p)">{{ connection(p) ? 'Configure' : 'Connect' }}</button
+        ><button *ngIf="connection(p)" (click)="test(connection(p))">Test</button>
+      </article>
+    </div>
+    <qai-modal [open]="show" [title]="provider + ' integration'" (close)="show = false"
+      ><form class="form" (ngSubmit)="save()">
+        <label>Name<input [(ngModel)]="form.name" name="name" /></label
+        ><label
+          >Settings JSON<textarea class="large" [(ngModel)]="form.settingsJson" name="settings"></textarea>
+        </label>
+        <p class="muted">OAuth/API secrets are stored outside this JSON.</p>
+        <footer>
+          <button type="button" (click)="show = false">Cancel</button
+          ><button class="primary" type="submit">Save connection</button>
+        </footer>
+      </form></qai-modal
+    >`
+})
+export class IntegrationsPage implements OnInit {
+  providers: string[] = [
+    'HubSpot',
+    'Salesforce',
+    'Pipedrive',
+    'Slack',
+    'Microsoft Teams',
+    'Google Calendar',
+    'Microsoft 365',
+    'Generic Webhook'
+  ];
+  connections: any[] = [];
+  senders: any[] = [];
+  sender: any = { name: 'Sales team', email: '', provider: 'brevo' };
+  suppression: any = { email: '', reason: 'manual-suppression' };
+  show = false;
+  provider = '';
+  form: any = {};
+  constructor(private data: IntegrationsService) {}
+  ngOnInit() {
+    this.load();
+  }
+  load() {
+    this.data.list().subscribe((r) => (this.connections = r));
+    this.data.senders().subscribe((r) => (this.senders = r));
+    this.data.providers().subscribe({
+      next: (r) => {
+        if (r?.length) this.providers = r.map((x: any) => (typeof x === 'string' ? x : x.name || x.provider));
+      },
+      error: () => {}
+    });
+  }
+  addSender() {
+    this.data.configureSender(this.sender).subscribe({
+      next: (r) => {
+        this.load();
+        alert(r.instruction || 'Sender configured.');
+      },
+      error: (e) => alert(e?.error?.detail || 'Sender configuration failed.')
+    });
+  }
+  verify(s: any) {
+    const token = s.provider === 'brevo' ? null : prompt('Verification token');
+    if (s.provider !== 'brevo' && !token) return;
+    this.data.verifySender(s.id, token).subscribe({
+      next: () => this.load(),
+      error: (e) => alert(e?.error?.detail || 'Verification failed.')
+    });
+  }
+  suppress() {
+    this.data.suppress(this.suppression.email, this.suppression.reason).subscribe(() => {
+      alert('Recipient suppressed.');
+      this.suppression.email = '';
+    });
+  }
+  connection(p: string) {
+    return this.connections.find((x) => String(x.provider).toLowerCase() === p.toLowerCase());
+  }
+  open(p: string) {
+    this.provider = p;
+    const c = this.connection(p);
+    this.form = c
+      ? { ...c }
+      : { provider: p, name: p + ' connection', status: 1, settingsJson: '{}', secretReference: '' };
+    this.show = true;
+  }
+  save() {
+    const op = this.form.id ? this.data.update(this.form.id, this.form) : this.data.create(this.form);
+    op.subscribe((r) => {
+      const i = this.connections.findIndex((x) => x.id === r.id);
+      i >= 0 ? (this.connections[i] = r) : this.connections.push(r);
+      this.show = false;
+    });
+  }
+  test(c: any) {
+    this.data.test(c.id).subscribe({
+      next: (r) => alert(`${c.provider}: ${r.success ? 'connection OK' : 'test failed'}`),
+      error: () => alert('Integration test failed.')
+    });
+  }
+  logo(p: string) {
+    return p
+      .split(' ')
+      .map((x) => x[0])
+      .join('')
+      .slice(0, 2);
+  }
+  desc(p: string) {
+    return p.includes('Calendar')
+      ? 'Book meetings automatically'
+      : p === 'Slack' || p.includes('Teams')
+        ? 'Notify sales and support teams'
+        : p.includes('Webhook')
+          ? 'Connect any external API'
+          : 'Sync contacts, leads and opportunities';
+  }
+}
