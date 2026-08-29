@@ -7,6 +7,7 @@ export class AcquisitionService {
   overview(){return this.api.get<any>('acquisition/overview')}
   icps(){return this.api.get<any[]>('acquisition/icp')}
   createIcp(input:any){return this.api.post<any>('acquisition/icp',input)}
+  discover(icpId:string){return this.api.post<any>(`acquisition/icp/${icpId}/discover`,{})}
   prospects(minimumScore=0){return this.api.get<any[]>(`acquisition/prospects?minimumScore=${minimumScore}`)}
   addProspect(input:any){return this.api.post<any>('acquisition/prospects',input)}
   addSignal(id:string,input:any){return this.api.post<any>(`acquisition/prospects/${id}/signals`,input)}
