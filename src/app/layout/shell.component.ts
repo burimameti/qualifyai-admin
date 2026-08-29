@@ -41,6 +41,7 @@ export class ShellComponent {
     {group:'PLATFORM',label:'Integrations',url:'/integrations',icon:'↗',module:'integrations',permission:'integrations.read'},
     {group:'PLATFORM',label:'Analytics & ROI',url:'/analytics',icon:'▥',module:'analytics',permission:'analytics.read'},
     {group:'PLATFORM',label:'Billing & Usage',url:'/billing',icon:'€',module:'billing',permission:'billing.read'},
+    {group:'PLATFORM',label:'Modules & Features',url:'/admin/modules',icon:'◫',module:'settings',permission:'billing.manage'},
     {group:'PLATFORM',label:'Users & Access',url:'/users',icon:'♙',module:'settings',permission:'users.read'},
     {group:'PLATFORM',label:'Security',url:'/security',icon:'◇',module:'settings',permission:'settings.manage'},
     {group:'PLATFORM',label:'White Label',url:'/white-label',icon:'◐',module:'settings',permission:'settings.manage'},

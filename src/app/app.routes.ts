@@ -23,6 +23,7 @@ export const routes: Routes = [
   {path:'integrations',loadComponent:()=>import('./features/integrations/integrations.page').then(m=>m.IntegrationsPage)},
   {path:'analytics',loadComponent:()=>import('./features/analytics/analytics.page').then(m=>m.AnalyticsPage)},
   {path:'billing',loadComponent:()=>import('./features/billing/billing.page').then(m=>m.BillingPage)},
+  {path:'admin/modules',loadComponent:()=>import('./features/module-admin/module-admin.page').then(m=>m.ModuleAdminPage)},
   {path:'users',loadComponent:()=>import('./features/users/users.page').then(m=>m.UsersPage)},
   {path:'security',loadComponent:()=>import('./features/security/security.page').then(m=>m.SecurityPage)},
   {path:'white-label',loadComponent:()=>import('./features/white-label/white-label.page').then(m=>m.WhiteLabelPage)},
