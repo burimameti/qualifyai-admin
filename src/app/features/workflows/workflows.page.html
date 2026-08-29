@@ -1,0 +1,151 @@
+<qai-page-header
+  title="Workflow Designer"
+  subtitle="Build a complete business process in clear steps, review it and launch with control."
+>
+  <select [(ngModel)]="activeId" (change)="loadDesigner()">
+    <option value="" disabled>Select workflow</option>
+    <option *ngFor="let flow of flows" [value]="flow.id">{{ flow.name }}</option>
+  </select>
+  <button (click)="templateOpen = true">Use template</button
+  ><button (click)="newOpen = true">New workflow</button>
+  <button class="primary" [disabled]="saving || !activeId" (click)="save()">
+    {{ saving ? 'Saving…' : 'Save workflow' }}
+  </button>
+</qai-page-header>
+
+<section class="summary">
+  <div>
+    <span class="eyebrow">Active process</span>
+    <h2>{{ activeName }}</h2>
+    <p>{{ nodes.length }} steps · {{ edges.length }} transitions · approval-controlled execution</p>
+  </div>
+  <div class="readiness">
+    <div>
+      <span>Launch readiness</span><strong>{{ readiness }}%</strong>
+    </div>
+    <div class="progress"><i [style.width.%]="readiness"></i></div>
+  </div>
+</section>
+<p class="notice success" *ngIf="message">{{ message }}</p>
+<p class="notice error" *ngIf="error">{{ error }}</p>
+<nav class="journey">
+  <div class="active">
+    <b>1</b><span><strong>Goal</strong><small>Choose outcome</small></span>
+  </div>
+  <div [class.active]="nodes.length">
+    <b>2</b><span><strong>Audience</strong><small>Define entry</small></span>
+  </div>
+  <div [class.active]="nodes.length > 2">
+    <b>3</b><span><strong>Qualification</strong><small>Rules and score</small></span>
+  </div>
+  <div [class.active]="nodes.length > 3">
+    <b>4</b><span><strong>Actions</strong><small>Automate work</small></span>
+  </div>
+  <div [class.active]="readiness === 100">
+    <b>5</b><span><strong>Review</strong><small>Approve & launch</small></span>
+  </div>
+</nav>
+
+<div class="designer">
+  <aside class="library">
+    <header>
+      <span class="eyebrow">Step library</span>
+      <h3>Add the next step</h3>
+    </header>
+    <button *ngFor="let item of library" (click)="add(item.type)">
+      <i>+</i
+      ><span
+        ><strong>{{ item.label }}</strong
+        ><small>{{ item.detail }}</small></span
+      >
+    </button>
+  </aside>
+  <main class="process">
+    <header>
+      <div>
+        <span class="eyebrow">Process map</span>
+        <h3>What happens, in order</h3>
+      </div>
+      <span class="draft">Draft</span>
+    </header>
+    <div class="empty" *ngIf="!nodes.length">
+      <span>↳</span>
+      <h3>Start with a proven template</h3>
+      <p>Select a use case and adjust each step to your operation.</p>
+      <button class="primary" (click)="templateOpen = true">Browse templates</button>
+    </div>
+    <ol *ngIf="nodes.length">
+      <li
+        *ngFor="let node of nodes; let i = index; trackBy: track"
+        [class.selected]="selected === node"
+        (click)="selected = node"
+      >
+        <b class="number">{{ i + 1 }}</b>
+        <div>
+          <span>{{ node.type }}</span
+          ><strong>{{ title(node) }}</strong>
+          <p>{{ detail(node) }}</p>
+        </div>
+        <aside>
+          <button [disabled]="i === 0" (click)="$event.stopPropagation(); move(node, -1)">↑</button
+          ><button [disabled]="i === nodes.length - 1" (click)="$event.stopPropagation(); move(node, 1)">
+            ↓
+          </button>
+        </aside>
+      </li>
+    </ol>
+  </main>
+  <aside class="inspector" *ngIf="selected; else placeholder">
+    <header>
+      <span class="eyebrow">Step settings</span>
+      <h3>{{ title(selected) }}</h3>
+    </header>
+    <label>Step name<input [ngModel]="title(selected)" (ngModelChange)="updateTitle($event)" /></label
+    ><label
+      >Business instruction<textarea
+        rows="7"
+        [ngModel]="detail(selected)"
+        (ngModelChange)="updateDetail($event)"
+      ></textarea>
+    </label>
+    <div class="guardrail">
+      <strong>Execution guardrail</strong>
+      <p>External messages require sender verification, suppression check and approval.</p>
+    </div>
+    <button class="danger" [disabled]="selected.type === 'start'" (click)="remove(selected)">
+      Remove step
+    </button>
+  </aside>
+  <ng-template #placeholder
+    ><aside class="inspector placeholder">← Select a step to configure it.</aside></ng-template
+  >
+</div>
+
+<qai-modal [open]="templateOpen" title="Choose a business workflow" (close)="templateOpen = false"
+  ><div class="templates">
+    <article *ngFor="let template of templates">
+      <span class="eyebrow">{{ template.segment }}</span>
+      <h3>{{ template.name }}</h3>
+      <p>{{ template.summary }}</p>
+      <footer>
+        <small>{{ template.steps.length }} steps · {{ template.outcome }}</small
+        ><button class="primary" (click)="install(template)">Use template</button>
+      </footer>
+    </article>
+  </div></qai-modal
+>
+<qai-modal [open]="newOpen" title="New workflow" (close)="newOpen = false"
+  ><form class="form" (ngSubmit)="createFlow()">
+    <label
+      >Workflow name<input
+        [(ngModel)]="newName"
+        name="name"
+        placeholder="Balkan logistics acquisition"
+        required
+    /></label>
+    <footer>
+      <button type="button" (click)="newOpen = false">Cancel</button
+      ><button class="primary" type="submit">Create workflow</button>
+    </footer>
+  </form></qai-modal
+>

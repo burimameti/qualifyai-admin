@@ -1,8 +1,151 @@
-import { CommonModule } from '@angular/common';import { Component,OnInit } from '@angular/core';import { FormsModule } from '@angular/forms';import { Modal,PageHeader } from '../../shared/ui';import { AcquisitionService } from './acquisition.service';
-@Component({standalone:true,imports:[CommonModule,FormsModule,Modal,PageHeader],template:`
-<qai-page-header title="Outbound Campaigns" subtitle="Turn a qualified target list into a personalized, scheduled conversation that stops as soon as a prospect replies."><button (click)="load()">↻ Refresh</button><button class="primary" (click)="show=true">+ Campaign</button></qai-page-header>
-<div class="automation-hero"><div><span>SALES ACQUISITION</span><b>{{rows.length}} campaigns</b><small>Messages are queued by the scheduler and delivered through a connected provider.</small></div><div><b>{{running}}</b><span>Running now</span></div></div>
-<section class="automation-list"><article *ngFor="let x of rows"><div class="auto-icon">↗</div><div class="auto-main"><header><b>{{x.name}}</b><span class="pill">{{status(x.status)}}</span></header><p><strong>GOAL</strong> {{x.goal}} <strong>START</strong> {{x.startsAtUtc?(x.startsAtUtc|date:'short'):'Not scheduled'}}</p><small>{{x.senderName}} · {{x.senderEmail}}</small></div><button class="primary" *ngIf="x.status===0||x.status===2" (click)="start(x)">Start campaign</button></article><p *ngIf="!rows.length">Create a target list in Prospect Discovery, then build the first outreach campaign.</p></section>
-<section class="panel table-wrap"><header><div><b>Approval-controlled outreach</b><span>Messages cannot be sent without verified sender, consent checks and human approval</span></div></header><table><thead><tr><th>Prospect</th><th>Recipient</th><th>Subject</th><th>Status</th><th></th></tr></thead><tbody><tr *ngFor="let m of messages"><td><b>{{m.prospect}}</b><small>{{m.contactName}}</small></td><td>{{m.email}}</td><td>{{m.subject}}</td><td><span class="pill">{{messageStatus(m.status)}}</span></td><td><button *ngIf="m.status===0&&!m.approvalRequested" (click)="requestApproval(m)">Request approval</button><button class="primary" *ngIf="m.status===0&&m.approvalRequested" (click)="approveAndSend(m)">Approve & send</button></td></tr></tbody></table><p *ngIf="!messages.length">Start a campaign to queue outreach messages.</p></section>
-<qai-modal [open]="show" title="Create outreach campaign" (close)="show=false"><form class="form" (ngSubmit)="save()"><label>Campaign name<input [(ngModel)]="form.name" name="name" required></label><label>Target list<select [(ngModel)]="form.targetListId" name="list" required><option value="">Select list</option><option *ngFor="let x of lists" [value]="x.id">{{x.name}}</option></select></label><div class="form2"><label>Sender name<input [(ngModel)]="form.senderName" name="sender"></label><label>Sender email<input type="email" [(ngModel)]="form.senderEmail" name="email"></label></div><div *ngFor="let step of form.steps;let i=index" class="panel"><b>Step {{i+1}}</b><div class="form2"><label>Delay hours<input type="number" [(ngModel)]="step.delayHours" [name]="'delay'+i"></label><label>Subject<input [(ngModel)]="step.subjectTemplate" [name]="'subject'+i"></label></div><label>Message<textarea [(ngModel)]="step.bodyTemplate" [name]="'body'+i"></textarea></label></div><small>Variables: {{'{{company}}'}}, {{'{{contact}}'}}, {{'{{industry}}'}}, {{'{{country}}'}}</small><footer><button type="button" (click)="show=false">Cancel</button><button class="primary" type="submit">Create campaign</button></footer></form></qai-modal>`})
-export class CampaignsPage implements OnInit{rows:any[]=[];lists:any[]=[];messages:any[]=[];show=false;form:any={name:'Logistics growth outreach',targetListId:'',goal:'book-demo',senderName:'Sales team',senderEmail:'sales@company.com',startsAtUtc:null,steps:[{stepNumber:1,delayHours:0,channel:'email',subjectTemplate:'A question about {{company}} logistics',bodyTemplate:'Hi {{contact}}, I noticed {{company}} is growing in {{country}}. Are freight capacity or delivery reliability priorities this quarter?'},{stepNumber:2,delayHours:72,channel:'email',subjectTemplate:'Freight planning for {{company}}',bodyTemplate:'Following up with a short example of how similar {{industry}} companies reduced manual quoting and delivery exceptions.'},{stepNumber:3,delayHours:96,channel:'email',subjectTemplate:'Should I close this?',bodyTemplate:'If logistics improvement is not a priority now, I will close this. If it is, I can arrange a focused 20-minute demo.'}]};constructor(private data:AcquisitionService){}ngOnInit(){this.load()}get running(){return this.rows.filter(x=>x.status===2).length}load(){this.data.campaigns().subscribe(r=>this.rows=r);this.data.targetLists().subscribe(r=>this.lists=r);this.data.messages().subscribe(r=>this.messages=r)}status(v:number){return ['Draft','Scheduled','Running','Paused','Completed'][v]||v}messageStatus(v:number){return ['Queued','Sent','Delivered','Replied','Failed','Suppressed'][v]||v}save(){this.data.createCampaign(this.form).subscribe(r=>{this.rows.unshift(r);this.show=false})}start(x:any){this.data.startCampaign(x.id).subscribe(r=>{x.status=r.status;this.load();alert(`${r.recipients} recipients enrolled; ${r.queued} first messages queued.`)})}requestApproval(m:any){this.data.requestApproval(m.id).subscribe(()=>m.approvalRequested=true)}approveAndSend(m:any){this.data.approveAndSend(m.id).subscribe({next:r=>{this.load();alert(`Email accepted by provider: ${r.providerMessageId}`)},error:e=>alert(e?.error?.detail||'Email could not be sent.')})}}
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { Modal, PageHeader } from '../../shared/ui';
+import { AcquisitionService } from './acquisition.service';
+
+@Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, Modal, PageHeader],
+  templateUrl: './campaigns.page.html',
+  styleUrl: './campaigns.page.css'
+})
+export class CampaignsPage implements OnInit {
+  rows: any[] = [];
+  lists: any[] = [];
+  messages: any[] = [];
+  show = false;
+  builderStep = 1;
+  busy = false;
+  message = '';
+  error = '';
+  form: any = this.emptyForm();
+
+  constructor(
+    private readonly data: AcquisitionService,
+    private readonly route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    this.load();
+  }
+  get running(): number {
+    return this.rows.filter((x) => x.status === 2).length;
+  }
+  get selectedList(): any {
+    return this.lists.find((x) => x.id === this.form.targetListId);
+  }
+  get canContinue(): boolean {
+    if (this.builderStep === 1) return Boolean(this.form.targetListId && this.form.name.trim());
+    if (this.builderStep === 2)
+      return Boolean(this.form.senderName.trim() && this.form.senderEmail.includes('@'));
+    return this.form.steps.every((x: any) => x.subjectTemplate.trim() && x.bodyTemplate.trim());
+  }
+
+  load(): void {
+    this.data.campaigns().subscribe((r) => (this.rows = r));
+    this.data.targetLists().subscribe((r) => {
+      this.lists = r;
+      const targetListId = this.route.snapshot.queryParamMap.get('targetListId');
+      if (targetListId && r.some((x) => x.id === targetListId)) {
+        this.form.targetListId = targetListId;
+        this.show = true;
+      }
+    });
+    this.data.messages().subscribe((r) => (this.messages = r));
+  }
+  openBuilder(): void {
+    this.form = this.emptyForm();
+    this.builderStep = 1;
+    this.error = '';
+    this.show = true;
+  }
+  next(): void {
+    if (this.canContinue && this.builderStep < 4) this.builderStep++;
+  }
+  back(): void {
+    if (this.builderStep > 1) this.builderStep--;
+  }
+  save(): void {
+    if (!this.canContinue) return;
+    this.busy = true;
+    this.data.createCampaign(this.form).subscribe({
+      next: (campaign) => {
+        this.busy = false;
+        this.rows.unshift(campaign);
+        this.show = false;
+        this.message =
+          'Campaign created as draft. Review it, then start to queue approval-controlled messages.';
+      },
+      error: (error) => {
+        this.busy = false;
+        this.error = error?.error?.detail || 'Campaign could not be created.';
+      }
+    });
+  }
+  start(campaign: any): void {
+    this.data.startCampaign(campaign.id).subscribe({
+      next: (result) => {
+        campaign.status = result.status;
+        this.load();
+        this.message = `${result.recipients} recipients enrolled; ${result.queued} first messages await approval.`;
+      },
+      error: (error) => (this.error = error?.error?.detail || 'Campaign could not start.')
+    });
+  }
+  requestApproval(message: any): void {
+    this.data.requestApproval(message.id).subscribe(() => (message.approvalRequested = true));
+  }
+  approveAndSend(message: any): void {
+    this.data.approveAndSend(message.id).subscribe({
+      next: (result) => {
+        this.load();
+        this.message = `Email accepted by provider: ${result.providerMessageId}`;
+      },
+      error: (error) => (this.error = error?.error?.detail || 'Email could not be sent.')
+    });
+  }
+  status(value: number): string {
+    return ['Draft', 'Scheduled', 'Running', 'Paused', 'Completed'][value] || String(value);
+  }
+  messageStatus(value: number): string {
+    return ['Queued', 'Sent', 'Delivered', 'Replied', 'Failed', 'Suppressed'][value] || String(value);
+  }
+  private emptyForm(): any {
+    return {
+      name: 'European logistics growth',
+      targetListId: '',
+      goal: 'book-demo',
+      senderName: 'Sales team',
+      senderEmail: 'sales@company.com',
+      startsAtUtc: null,
+      steps: [
+        {
+          stepNumber: 1,
+          delayHours: 0,
+          channel: 'email',
+          subjectTemplate: 'A question about {{company}} logistics',
+          bodyTemplate:
+            'Hi {{contact}}, I noticed {{company}} is growing in {{country}}. Are freight capacity or delivery reliability priorities this quarter?'
+        },
+        {
+          stepNumber: 2,
+          delayHours: 72,
+          channel: 'email',
+          subjectTemplate: 'Freight planning for {{company}}',
+          bodyTemplate:
+            'Following up with a short example of how similar {{industry}} companies reduced manual quoting and delivery exceptions.'
+        },
+        {
+          stepNumber: 3,
+          delayHours: 96,
+          channel: 'email',
+          subjectTemplate: 'Should I close this?',
+          bodyTemplate:
+            'If logistics improvement is not a priority now, I will close this. If it is, I can arrange a focused 20-minute demo.'
+        }
+      ]
+    };
+  }
+}

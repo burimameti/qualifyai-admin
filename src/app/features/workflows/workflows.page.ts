@@ -1,145 +1,124 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { Modal, PageHeader } from "../../shared/ui";
-import { WorkflowsService } from "./workflows.service";
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Modal, PageHeader } from '../../shared/ui';
+import { WorkflowsService } from './workflows.service';
+
+type StepType = 'start' | 'question' | 'condition' | 'score' | 'action' | 'meeting' | 'handoff';
+interface Step {
+  id: string;
+  flowId: string;
+  nodeKey: string;
+  type: StepType;
+  configJson: string;
+  x: number;
+  y: number;
+}
+interface Edge {
+  id: string;
+  flowId: string;
+  fromNodeKey: string;
+  toNodeKey: string;
+  conditionJson: string;
+}
+interface Template {
+  name: string;
+  segment: string;
+  summary: string;
+  outcome: string;
+  steps: Array<[StepType, string, string]>;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
-  template: `<qai-page-header
-      title="Qualification Workflows"
-      subtitle="Design how QualifyAI asks, branches, scores and executes revenue actions."
-      ><select [(ngModel)]="activeId" (change)="loadDesigner()">
-        <option *ngFor="let f of flows" [value]="f.id">
-          {{ f.name }}
-        </option></select
-      ><button (click)="newOpen = true">+ Workflow</button
-      ><button class="primary" (click)="save()">
-        Save workflow
-      </button></qai-page-header
-    >
-    <div class="workflow">
-      <aside>
-        <b>NODE LIBRARY</b
-        ><button *ngFor="let n of library" (click)="add(n.type)">
-          <span>{{ n.icon }}</span
-          >{{ n.label }}
-        </button>
-        <hr />
-        <b>LOGISTICS STARTERS</b>
-        <button *ngFor="let starter of starters" (click)="installStarter(starter)">
-          <span>▦</span>{{ starter.name }}
-        </button>
-        <hr />
-        <button (click)="connectSelected()" [disabled]="!selected">
-          Connect selected → last node
-        </button>
-      </aside>
-      <section class="canvas">
-        <div
-          class="node"
-          *ngFor="let n of nodes"
-          [style.left.px]="n.x"
-          [style.top.px]="n.y"
-          (click)="selected = n"
-        >
-          <small>{{ n.type | uppercase }}</small
-          ><b>{{ nodeTitle(n) }}</b
-          ><span>{{ nodeText(n) }}</span
-          ><i></i>
-        </div>
-        <svg>
-          <line
-            *ngFor="let e of edges; let i = index"
-            [attr.x1]="edgePoint(e, true, 'x')"
-            [attr.y1]="edgePoint(e, true, 'y')"
-            [attr.x2]="edgePoint(e, false, 'x')"
-            [attr.y2]="edgePoint(e, false, 'y')"
-            stroke="#94a3b8"
-            stroke-width="2"
-          />
-        </svg>
-      </section>
-      <aside class="inspector" *ngIf="selected">
-        <h3>Node settings</h3>
-        <label>Type<input [(ngModel)]="selected.type" /></label
-        ><label
-          >Configuration<textarea [(ngModel)]="selected.configJson"></textarea>
-        </label>
-        <div class="form2">
-          <label>X<input type="number" [(ngModel)]="selected.x" /></label
-          ><label>Y<input type="number" [(ngModel)]="selected.y" /></label>
-        </div>
-        <button class="danger" (click)="remove(selected)">Delete node</button>
-      </aside>
-    </div>
-    <qai-modal
-      [open]="newOpen"
-      title="New qualification workflow"
-      (close)="newOpen = false"
-      ><form class="form" (ngSubmit)="createFlow()">
-        <label>Name<input [(ngModel)]="newName" name="name" required /></label>
-        <footer>
-          <button type="button" (click)="newOpen = false">Cancel</button
-          ><button class="primary" type="submit">Create</button>
-        </footer>
-      </form></qai-modal
-    >`,
+  templateUrl: './workflows.page.html',
+  styleUrl: './workflows.page.css'
 })
 export class WorkflowsPage implements OnInit {
-  flows: any[] = [];
-  activeId = "";
-  nodes: any[] = [];
-  edges: any[] = [];
-  selected: any;
+  flows: Array<{ id: string; name: string }> = [];
+  activeId = '';
+  nodes: Step[] = [];
+  edges: Edge[] = [];
+  selected: Step | null = null;
   newOpen = false;
-  newName = "";
-  library = [
-    { type: "question", label: "Question", icon: "?" },
-    { type: "condition", label: "Condition", icon: "◇" },
-    { type: "score", label: "Lead score", icon: "+" },
-    { type: "action", label: "Action", icon: "⚡" },
-    { type: "meeting", label: "Book meeting", icon: "◷" },
-    { type: "handoff", label: "Human handoff", icon: "↗" },
+  templateOpen = false;
+  saving = false;
+  newName = '';
+  message = '';
+  error = '';
+
+  readonly library: Array<{ type: StepType; label: string; detail: string }> = [
+    { type: 'question', label: 'Collect data', detail: 'Capture missing qualification data' },
+    { type: 'condition', label: 'Business rule', detail: 'Continue only when criteria match' },
+    { type: 'score', label: 'Score prospect', detail: 'Calculate fit and buying intent' },
+    { type: 'action', label: 'Run action', detail: 'Enrich, create a task or send' },
+    { type: 'meeting', label: 'Book meeting', detail: 'Offer a demo or sales meeting' },
+    { type: 'handoff', label: 'Human approval', detail: 'Pause and assign an owner' }
   ];
-  starters = [
+
+  readonly templates: Template[] = [
     {
-      name: "Freight RFQ → sales",
-      nodes: [
-        ["start", "Inbound freight request", { event: "inquiry.received", channel: "web,email" }],
-        ["question", "Capture shipment details", { question: "Collect origin, destination, cargo, weight, frequency and target pickup date" }],
-        ["condition", "Check commercial fit", { condition: "Supported lane, valid cargo and pickup within 30 days" }],
-        ["score", "Prioritize opportunity", { action: "Score by recurring volume, margin band, urgency and company fit" }],
-        ["action", "Create quote opportunity", { action: "Create CRM opportunity and pricing task with shipment context" }],
-        ["handoff", "Assign sales owner", { action: "Route high-value RFQ to the lane owner and notify sales" }],
+      name: 'Logistics customer acquisition',
+      segment: 'Sales acquisition',
+      summary: 'Turn European companies with freight demand into qualified sales demos.',
+      outcome: 'Qualified meetings',
+      steps: [
+        ['start', 'Import target companies', 'Licensed provider or reviewed CSV'],
+        ['action', 'Verify and enrich', 'Deduplicate domains and collect company evidence'],
+        ['score', 'Score fit and intent', 'Geography, industry, size and current buying signals'],
+        ['condition', 'Keep sales-ready prospects', 'Fit ≥ 65 and intent ≥ 40'],
+        ['handoff', 'Approve audience and message', 'Sales owner reviews every external send'],
+        ['action', 'Start controlled outreach', 'Suppression checks, verified sender and throttling'],
+        ['meeting', 'Book logistics demo', 'Create CRM opportunity and offer meeting slots']
       ]
     },
     {
-      name: "Shipment delay response",
-      nodes: [
-        ["start", "Delay event received", { event: "shipment.delay.detected" }],
-        ["condition", "Assess customer impact", { condition: "Delay exceeds SLA or affects a priority account" }],
-        ["action", "Notify customer", { action: "Send status, revised ETA and recovery options" }],
-        ["action", "Create operations ticket", { action: "Open an exception ticket with shipment and carrier data" }],
-        ["handoff", "Escalate exception", { action: "Assign severe cases to operations management" }],
+      name: 'Freight RFQ qualification',
+      segment: 'Inbound sales',
+      summary: 'Qualify freight requests and route valuable lanes to the right owner.',
+      outcome: 'Quote opportunities',
+      steps: [
+        ['start', 'Freight request received', 'Web, email or integration event'],
+        ['question', 'Capture shipment details', 'Origin, destination, cargo, weight and pickup date'],
+        ['condition', 'Check commercial fit', 'Supported lane, cargo and pickup within 30 days'],
+        ['score', 'Prioritize opportunity', 'Volume, margin, urgency and company fit'],
+        ['action', 'Create quote opportunity', 'Create CRM opportunity and pricing task'],
+        ['handoff', 'Assign lane owner', 'Notify the responsible sales owner']
       ]
     },
     {
-      name: "Dormant customer reactivation",
-      nodes: [
-        ["start", "Account inactivity", { event: "customer.no_booking_60_days" }],
-        ["condition", "Check account value", { condition: "Previous revenue and lane activity exceed threshold" }],
-        ["action", "Prepare account brief", { action: "Summarize previous lanes, volume, rates and service issues" }],
-        ["action", "Create sales follow-up", { action: "Create owner task with a tailored reactivation offer" }],
-        ["meeting", "Schedule account review", { action: "Offer available meeting times to the customer" }],
+      name: 'Customer support resolution',
+      segment: 'Service operations',
+      summary: 'Classify requests, check contracts and safely resolve known issues.',
+      outcome: 'Resolved cases',
+      steps: [
+        ['start', 'Customer request received', 'Support portal, email or integration'],
+        ['action', 'Classify issue', 'Delivery, payment, refund or contract category'],
+        ['condition', 'Check contract and SLA', 'Validate entitlement and resolution policy'],
+        ['action', 'Apply known resolution', 'Use approved knowledge and audit each action'],
+        ['handoff', 'Escalate complex case', 'Assign unresolved or high-risk case to specialist']
       ]
     }
   ];
-  constructor(private data: WorkflowsService) {}
-  ngOnInit() {
+
+  constructor(private readonly data: WorkflowsService) {}
+  ngOnInit(): void {
     this.load();
   }
-  load() {
+  get activeName(): string {
+    return this.flows.find((x) => x.id === this.activeId)?.name || 'Select a workflow';
+  }
+  get readiness(): number {
+    const checks = [
+      this.nodes.some((x) => x.type === 'start'),
+      this.nodes.some((x) => x.type === 'condition' || x.type === 'score'),
+      this.nodes.some((x) => ['action', 'meeting', 'handoff'].includes(x.type)),
+      this.edges.length >= Math.max(0, this.nodes.length - 1)
+    ];
+    return this.nodes.length ? checks.filter(Boolean).length * 25 : 0;
+  }
+  load(): void {
     this.data.list().subscribe((r) => {
       this.flows = r;
       if (r.length && !this.activeId) {
@@ -148,160 +127,156 @@ export class WorkflowsPage implements OnInit {
       }
     });
   }
-  createFlow() {
-    this.data.create({ name: this.newName, active: true }).subscribe((r) => {
-      this.flows.push(r);
-      this.activeId = r.id;
-      this.nodes = [{
-        id: crypto.randomUUID(),
-        flowId: r.id,
-        nodeKey: "start",
-        type: "start",
-        configJson: "{}",
-        x: 180,
-        y: 120,
-      }];
-      this.edges = [];
-      this.newName = "";
+  createFlow(): void {
+    this.data.create({ name: this.newName, active: true }).subscribe((flow) => {
+      this.flows.push(flow);
+      this.activeId = flow.id;
+      this.nodes = [this.makeStep('start', 0, 'Workflow started', 'Manual start')];
+      this.rebuildEdges();
+      this.selected = this.nodes[0];
+      this.newName = '';
       this.newOpen = false;
+      this.message = 'Workflow created. Add the next business step.';
     });
   }
-  installStarter(starter: any) {
-    this.data.create({ name: starter.name, active: true }).subscribe({
+  install(template: Template): void {
+    this.data.create({ name: template.name, active: true }).subscribe({
       next: (flow) => {
-        const nodes = starter.nodes.map((definition: any[], index: number) => ({
-          id: crypto.randomUUID(),
-          flowId: flow.id,
-          nodeKey: index === 0 ? "start" : `step_${index}`,
-          type: definition[0],
-          configJson: JSON.stringify({ title: definition[1], ...definition[2] }),
-          x: 100 + (index % 3) * 260,
-          y: 90 + Math.floor(index / 3) * 180,
-        }));
-        const edges = nodes.slice(1).map((node: any, index: number) => ({
-          id: crypto.randomUUID(),
-          flowId: flow.id,
-          fromNodeKey: nodes[index].nodeKey,
-          toNodeKey: node.nodeKey,
-          conditionJson: "{}",
-        }));
-        this.data.saveDesigner(flow.id, { nodes, edges }).subscribe({
+        this.activeId = flow.id;
+        this.nodes = template.steps.map((x, i) => this.makeStep(x[0], i, x[1], x[2]));
+        this.rebuildEdges();
+        this.data.saveDesigner(flow.id, { nodes: this.nodes, edges: this.edges }).subscribe({
           next: () => {
             this.flows.push(flow);
-            this.activeId = flow.id;
-            this.nodes = nodes;
-            this.edges = edges;
-            this.selected = nodes[0];
+            this.selected = this.nodes[0];
+            this.templateOpen = false;
+            this.message = `“${template.name}” is ready to review.`;
           },
-          error: () => alert("The workflow was created, but its steps could not be saved."),
+          error: () => (this.error = 'The steps could not be saved.')
         });
       },
-      error: () => alert("The workflow starter could not be installed."),
+      error: () => (this.error = 'The workflow template could not be installed.')
     });
   }
-  loadDesigner() {
-    if (!this.activeId) return;
-    this.data.designer(this.activeId).subscribe((r) => {
-      this.nodes = r.nodes || [];
-      this.edges = r.edges || [];
-    });
-  }
-  add(type: string) {
-    const n = {
-      id: crypto.randomUUID(),
-      flowId: this.activeId,
-      nodeKey: "node_" + Date.now(),
-      type,
-      configJson: "{}",
-      x: 180 + (this.nodes.length % 4) * 220,
-      y: 100 + Math.floor(this.nodes.length / 4) * 150,
-    };
-    this.nodes.push(n);
-    this.selected = n;
-  }
-  remove(n: any) {
-    this.nodes = this.nodes.filter((x) => x !== n);
-    this.edges = this.edges.filter(
-      (e) => e.fromNodeKey !== n.nodeKey && e.toNodeKey !== n.nodeKey,
-    );
-    this.selected = null;
-  }
-  connectSelected() {
-    if (!this.selected || this.nodes.length < 2) return;
-    let target: any = null;
-    for (let i = this.nodes.length - 1; i >= 0; i--) {
-      if (this.nodes[i] !== this.selected) {
-        target = this.nodes[i];
-        break;
-      }
-    }
-    if (!target) return;
-    if (this.edges.some((edge) => edge.fromNodeKey === this.selected.nodeKey && edge.toNodeKey === target.nodeKey)) {
-      alert("These nodes are already connected.");
-      return;
-    }
-    this.edges.push({
-      id: crypto.randomUUID(),
-      flowId: this.activeId,
-      fromNodeKey: this.selected.nodeKey,
-      toNodeKey: target.nodeKey,
-      conditionJson: "{}",
-    });
-  }
-  save() {
-    if (!this.activeId) return;
-    if (!this.nodes.length) {
-      alert("A workflow requires at least one node.");
-      return;
-    }
-    const keys = new Set(this.nodes.map((node) => String(node.nodeKey).trim().toLowerCase()));
-    if (keys.size !== this.nodes.length || keys.has("")) {
-      alert("Every node requires a unique key.");
-      return;
-    }
-    try {
-      this.nodes.forEach((node) => JSON.parse(node.configJson || "{}"));
-      this.edges.forEach((edge) => JSON.parse(edge.conditionJson || "{}"));
-    } catch {
-      alert("Node configuration and edge conditions must be valid JSON.");
-      return;
-    }
-    this.data
-      .saveDesigner(this.activeId, { nodes: this.nodes, edges: this.edges })
-      .subscribe({
-        next: () => {
-          alert("Workflow saved.");
-          this.loadDesigner();
-        },
-        error: (e) => alert(e?.error?.error || "Workflow could not be saved."),
+  loadDesigner(): void {
+    if (this.activeId)
+      this.data.designer(this.activeId).subscribe((r) => {
+        this.nodes = r.nodes || [];
+        this.edges = r.edges || [];
+        this.selected = this.nodes[0] || null;
       });
   }
-  nodeTitle(n: any) {
-    return (
-      (
-        {
-          question: "Qualification question",
-          condition: "Branch condition",
-          score: "Adjust lead score",
-          action: "Execute business action",
-          meeting: "Book sales meeting",
-          handoff: "Assign human agent",
-        } as any
-      )[n.type] || n.type
+  add(type: StepType): void {
+    if (!this.activeId) {
+      this.error = 'Create or select a workflow first.';
+      return;
+    }
+    const step = this.makeStep(
+      type,
+      this.nodes.length,
+      this.label(type),
+      'Configure this business instruction'
     );
+    this.nodes.push(step);
+    this.rebuildEdges();
+    this.selected = step;
   }
-  nodeText(n: any) {
+  remove(step: Step): void {
+    this.nodes = this.nodes.filter((x) => x !== step);
+    this.position();
+    this.rebuildEdges();
+    this.selected = this.nodes[0] || null;
+  }
+  move(step: Step, direction: -1 | 1): void {
+    const i = this.nodes.indexOf(step);
+    const target = i + direction;
+    if (target < 0 || target >= this.nodes.length) return;
+    [this.nodes[i], this.nodes[target]] = [this.nodes[target], this.nodes[i]];
+    this.position();
+    this.rebuildEdges();
+  }
+  save(): void {
+    if (!this.activeId || !this.nodes.length) {
+      this.error = 'A workflow requires at least one step.';
+      return;
+    }
+    this.saving = true;
+    this.error = '';
+    this.data.saveDesigner(this.activeId, { nodes: this.nodes, edges: this.edges }).subscribe({
+      next: () => {
+        this.saving = false;
+        this.message = 'Workflow saved and ready for review.';
+      },
+      error: (e) => {
+        this.saving = false;
+        this.error = e?.error?.error || 'Workflow could not be saved.';
+      }
+    });
+  }
+  title(step: Step): string {
+    return this.config(step).title || this.label(step.type);
+  }
+  detail(step: Step): string {
+    const c = this.config(step);
+    return c.detail || c.question || c.condition || c.action || c.event || 'Configure this step';
+  }
+  updateTitle(value: string): void {
+    if (this.selected)
+      this.selected.configJson = JSON.stringify({ ...this.config(this.selected), title: value });
+  }
+  updateDetail(value: string): void {
+    if (this.selected)
+      this.selected.configJson = JSON.stringify({ ...this.config(this.selected), detail: value });
+  }
+  track(_: number, step: Step): string {
+    return step.id;
+  }
+  private makeStep(type: StepType, index: number, title: string, detail: string): Step {
+    return {
+      id: crypto.randomUUID(),
+      flowId: this.activeId,
+      nodeKey: index ? `step_${index}_${Date.now()}` : 'start',
+      type,
+      configJson: JSON.stringify({ title, detail }),
+      x: 120,
+      y: 80 + index * 150
+    };
+  }
+  private rebuildEdges(): void {
+    this.edges = this.nodes
+      .slice(1)
+      .map((node, i) => ({
+        id: crypto.randomUUID(),
+        flowId: this.activeId,
+        fromNodeKey: this.nodes[i].nodeKey,
+        toNodeKey: node.nodeKey,
+        conditionJson: '{}'
+      }));
+  }
+  private position(): void {
+    this.nodes.forEach((x, i) => {
+      x.x = 120;
+      x.y = 80 + i * 150;
+    });
+  }
+  private config(step: Step): Record<string, string> {
     try {
-      const c = JSON.parse(n.configJson || "{}");
-      return c.title || c.question || c.action || c.condition || "Configure this node";
+      return JSON.parse(step.configJson || '{}');
     } catch {
-      return "Configure this node";
+      return {};
     }
   }
-  edgePoint(e: any, from: boolean, axis: "x" | "y") {
-    const n = this.nodes.find(
-      (x) => x.nodeKey === (from ? e.fromNodeKey : e.toNodeKey),
-    );
-    return axis === "x" ? (n?.x || 0) + 140 : (n?.y || 0) + 50;
+  private label(type: StepType): string {
+    return (
+      {
+        start: 'Start workflow',
+        question: 'Collect qualification data',
+        condition: 'Check business rule',
+        score: 'Score prospect',
+        action: 'Run business action',
+        meeting: 'Book meeting',
+        handoff: 'Human approval'
+      } as Record<StepType, string>
+    )[type];
   }
 }
