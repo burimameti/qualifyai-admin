@@ -48,6 +48,7 @@ import { AutomationsService } from "./automations.service";
             [(ngModel)]="a.active"
             (change)="toggle(a)" /><span></span></label
         ><button (click)="run(a)">Run</button
+        ><button (click)="publish(a)">RabbitMQ event</button
         ><button (click)="open(a)">Edit</button>
       </article>
     </section>
@@ -57,6 +58,7 @@ import { AutomationsService } from "./automations.service";
       <tbody><tr *ngFor="let run of runs"><td>{{run.createdAtUtc|date:'short'}}</td><td>{{ruleName(run.ruleId)}}</td><td><span class="pill" [class.success]="run.status==='completed'" [class.hot]="run.status==='failed'">{{run.status}}</span></td><td><small>{{runSummary(run)}}</small></td><td><button *ngIf="run.status==='failed'" (click)="retry(run)">Retry</button></td></tr></tbody></table>
       <p *ngIf="!runs.length">No automation has executed yet.</p>
     </section>
+    <section class="panel table-wrap" *ngIf="deadLetters.length"><header><div><b>Dead-letter queue</b><span>Runs that exhausted automatic retries</span></div></header><table><thead><tr><th>Created</th><th>Entity</th><th>Error</th><th>Status</th></tr></thead><tbody><tr *ngFor="let x of deadLetters"><td>{{x.createdAtUtc|date:'short'}}</td><td>{{x.entityType}}</td><td><small>{{x.error}}</small></td><td><span class="pill hot">{{x.status}}</span></td></tr></tbody></table></section>
     <qai-modal
       [open]="show"
       [title]="form.id ? 'Edit automation' : 'Create revenue automation'"
@@ -96,6 +98,7 @@ import { AutomationsService } from "./automations.service";
 export class AutomationsPage implements OnInit {
   rows: AutomationRule[] = [];
   runs: any[] = [];
+  deadLetters: any[] = [];
   show = false;
   lastRun = "Never";
   installing = false;
@@ -117,6 +120,7 @@ export class AutomationsPage implements OnInit {
       this.runs = r;
       if (r.length) this.lastRun = new Date(r[0].createdAtUtc).toLocaleString();
     });
+    this.data.deadLetters().subscribe(r=>this.deadLetters=r);
   }
   open(a?: AutomationRule) {
     this.form = a
@@ -170,6 +174,7 @@ export class AutomationsPage implements OnInit {
     },error:e=>alert(e?.error?.detail||'Automation execution failed.')});
   }
   retry(run:any){this.data.retry(run.id).subscribe({next:()=>this.load(),error:e=>alert(e?.error?.detail||'Retry failed.')})}
+  publish(a:AutomationRule){this.data.publishTrigger(a.id).subscribe({next:r=>alert(`Event ${r.eventId} published to RabbitMQ.`),error:()=>alert('Event could not be published.')})}
   ruleName(id:string){return this.rows.find(x=>x.id===id)?.name||id?.slice(0,8)||'Unknown'}
   runSummary(run:any){try{return JSON.parse(run.logJson||'[]').map((x:any)=>x.message||x).join(' · ')}catch{return run.logJson||'—'}}
   runAll() {
