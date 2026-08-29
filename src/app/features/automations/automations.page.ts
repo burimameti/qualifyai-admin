@@ -51,6 +51,12 @@ import { AutomationsService } from "./automations.service";
         ><button (click)="open(a)">Edit</button>
       </article>
     </section>
+    <section class="panel table-wrap">
+      <header><div><b>Execution history</b><span>Real action results and failures</span></div><button (click)="load()">↻ Refresh</button></header>
+      <table><thead><tr><th>Started</th><th>Automation</th><th>Status</th><th>Execution log</th><th></th></tr></thead>
+      <tbody><tr *ngFor="let run of runs"><td>{{run.createdAtUtc|date:'short'}}</td><td>{{ruleName(run.ruleId)}}</td><td><span class="pill" [class.success]="run.status==='completed'" [class.hot]="run.status==='failed'">{{run.status}}</span></td><td><small>{{runSummary(run)}}</small></td><td><button *ngIf="run.status==='failed'" (click)="retry(run)">Retry</button></td></tr></tbody></table>
+      <p *ngIf="!runs.length">No automation has executed yet.</p>
+    </section>
     <qai-modal
       [open]="show"
       [title]="form.id ? 'Edit automation' : 'Create revenue automation'"
@@ -89,6 +95,7 @@ import { AutomationsService } from "./automations.service";
 })
 export class AutomationsPage implements OnInit {
   rows: AutomationRule[] = [];
+  runs: any[] = [];
   show = false;
   lastRun = "Never";
   form: any = {
@@ -106,6 +113,7 @@ export class AutomationsPage implements OnInit {
   load() {
     this.data.list().subscribe((r) => (this.rows = r));
     this.data.runs().subscribe((r) => {
+      this.runs = r;
       if (r.length) this.lastRun = new Date(r[0].createdAtUtc).toLocaleString();
     });
   }
@@ -155,11 +163,14 @@ export class AutomationsPage implements OnInit {
     this.data.update(a.id, a).subscribe();
   }
   run(a: AutomationRule) {
-    this.data.run(a.id).subscribe((r) => {
+    this.data.run(a.id).subscribe({next:(r) => {
       this.lastRun = new Date().toLocaleString();
-      alert(`Automation ${r.status || "completed"}.`);
-    });
+      this.load();
+    },error:e=>alert(e?.error?.detail||'Automation execution failed.')});
   }
+  retry(run:any){this.data.retry(run.id).subscribe({next:()=>this.load(),error:e=>alert(e?.error?.detail||'Retry failed.')})}
+  ruleName(id:string){return this.rows.find(x=>x.id===id)?.name||id?.slice(0,8)||'Unknown'}
+  runSummary(run:any){try{return JSON.parse(run.logJson||'[]').map((x:any)=>x.message||x).join(' · ')}catch{return run.logJson||'—'}}
   runAll() {
     this.data.runSales().subscribe((r) => {
       this.lastRun = new Date().toLocaleString();
