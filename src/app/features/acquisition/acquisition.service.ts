@@ -13,9 +13,6 @@ export class AcquisitionService {
   createIcp(input: any) {
     return this.api.post<any>('acquisition/icp', input);
   }
-  discover(icpId: string) {
-    return this.api.post<any>(`acquisition/icp/${icpId}/discover`, {});
-  }
   prospects(minimumScore = 0) {
     return this.api.get<any[]>(`acquisition/prospects?minimumScore=${minimumScore}`);
   }

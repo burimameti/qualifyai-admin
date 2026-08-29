@@ -15,9 +15,8 @@ import { AcquisitionService } from './acquisition.service';
     >
       <button (click)="load()">↻ Refresh</button
       ><button (click)="icpOpen = true">+ Ideal customer profile</button
-      ><button class="primary" [disabled]="discovering || !activeIcp" (click)="runDiscovery()">
-        {{ discovering ? 'Prospecting…' : '⌕ Run prospecting' }}</button
-      ><button (click)="bulkOpen = true">⇧ Bulk import</button
+      ><button class="primary" [disabled]="!activeIcp" (click)="bulkOpen = true">
+        ⇧ Import verified companies</button
       ><button (click)="prospectOpen = true">+ One prospect</button>
     </qai-page-header>
     <div class="metrics">
@@ -66,7 +65,7 @@ import { AcquisitionService } from './acquisition.service';
             {{ x.active ? 'Use profile' : 'Paused' }}</label
           >
         </div>
-        <p *ngIf="!icps.length">Create an ideal customer profile before running discovery.</p>
+        <p *ngIf="!icps.length">Create an ideal customer profile, then import companies from a verified source.</p>
         <p class="error" *ngIf="error">{{ error }}</p>
         <p *ngIf="message">{{ message }}</p>
       </section>
@@ -119,7 +118,7 @@ import { AcquisitionService } from './acquisition.service';
             <td><input type="checkbox" [checked]="selectedIds.has(x.id)" (change)="toggle(x.id)" /></td>
             <td>
               <b>{{ x.companyName }}</b
-              ><small>{{ x.domain }}</small>
+              ><small>{{ x.domain }} · {{ x.source || 'Source not recorded' }}</small>
             </td>
             <td>
               {{ x.contactName || 'Research needed' }}<small>{{ x.jobTitle }} · {{ x.email }}</small>
@@ -298,7 +297,6 @@ export class DiscoverPage implements OnInit {
   selectedIds = new Set<string>();
   listName = '';
   selectedIcpId = '';
-  discovering = false;
   message = '';
   error = '';
   icpOpen = false;
@@ -390,26 +388,7 @@ export class DiscoverPage implements OnInit {
       this.icps.push(r);
       this.selectedIcpId = r.id;
       this.icpOpen = false;
-      this.message = 'Profile saved. Run prospecting to find matching companies.';
-    });
-  }
-  runDiscovery() {
-    if (!this.activeIcp) return;
-    this.discovering = true;
-    this.error = '';
-    this.message = '';
-    this.data.discover(this.activeIcp.id).subscribe({
-      next: (r) => {
-        this.discovering = false;
-        this.message = r.discovered
-          ? `${r.discovered} matching prospects discovered and scored.`
-          : 'No new prospects found; existing matches are already in the table.';
-        this.load();
-      },
-      error: (e) => {
-        this.discovering = false;
-        this.error = e?.error?.detail || 'Prospecting could not be completed.';
-      }
+      this.message = 'Profile saved. Import verified companies to build its target audience.';
     });
   }
   saveProspect() {
