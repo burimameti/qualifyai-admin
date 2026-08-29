@@ -4,6 +4,8 @@ export const routes: Routes = [
  { path: 'login', loadComponent:()=>import('./features/auth/login.page').then(m=>m.LoginPage) },
  { path: '', canActivate:[authGuard], loadComponent:()=>import('./layout/shell.component').then(m=>m.ShellComponent), children:[
   {path:'dashboard',loadComponent:()=>import('./features/dashboard/dashboard.page').then(m=>m.DashboardPage)},
+  {path:'discover',loadComponent:()=>import('./features/acquisition/discover.page').then(m=>m.DiscoverPage)},
+  {path:'campaigns',loadComponent:()=>import('./features/acquisition/campaigns.page').then(m=>m.CampaignsPage)},
   {path:'inbox',loadComponent:()=>import('./features/inbox/inbox.page').then(m=>m.InboxPage)},
   {path:'tickets',loadComponent:()=>import('./features/tickets/tickets.page').then(m=>m.TicketsPage)},
   {path:'crm/contacts',loadComponent:()=>import('./features/crm/contacts.page').then(m=>m.ContactsPage)},

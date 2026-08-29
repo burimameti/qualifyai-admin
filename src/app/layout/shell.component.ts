@@ -19,17 +19,19 @@ interface NavigationItem {
   template:`<div class="shell"><aside><div class="brand">✦ <span>QualifyAI</span><small>ENTERPRISE</small></div><div class="workspace"><i>{{initials(workspaceName)}}</i><div><b>{{workspaceName}}</b><span>{{session?.licensePlan||'Licensed'}} workspace</span></div></div><nav><ng-container *ngFor="let group of visibleGroups"><label>{{group}}</label><a *ngFor="let item of navBy(group)" [routerLink]="item.url" routerLinkActive="active"><span>{{item.icon}}</span>{{item.label}}</a></ng-container></nav><div class="side-bottom"><div class="usage"><span>License plan</span><b>{{session?.licensePlan||'—'}}</b><i><u></u></i></div><button type="button" (click)="logout()">{{initials(session?.name||session?.email||'User')}} <span>{{session?.name||session?.email||'User'}}<small>{{primaryRole}}</small></span>↗</button></div></aside><main><header><div class="search">⌕ <input aria-label="Global search" placeholder="Search customers, conversations, tickets…"><kbd>Ctrl K</kbd></div><div class="head-actions"><button type="button" aria-label="Help">?</button><button type="button" aria-label="Notifications">♢</button><div class="avatar">{{initials(session?.name||session?.email||'User')}}</div></div></header><section class="page"><router-outlet/></section></main></div>`
 })
 export class ShellComponent {
-  readonly groups=['OVERVIEW','CUSTOMERS','REVENUE','BUSINESS AUTOMATION','PLATFORM'];
+  readonly groups=['OVERVIEW','ACQUIRE','CONVERT','CUSTOMER SERVICE','BUSINESS AUTOMATION','PLATFORM'];
   readonly nav:NavigationItem[]=[
     {group:'OVERVIEW',label:'Dashboard',url:'/dashboard',icon:'⌂',module:'analytics',permission:'analytics.read'},
-    {group:'CUSTOMERS',label:'Inbox',url:'/inbox',icon:'▱',module:'inbox',permission:'conversations.read'},
-    {group:'CUSTOMERS',label:'Tickets',url:'/tickets',icon:'▣',module:'ticketing',permission:'tickets.read'},
-    {group:'CUSTOMERS',label:'Contacts',url:'/crm/contacts',icon:'◎',module:'crm',permission:'crm.read'},
-    {group:'CUSTOMERS',label:'Companies',url:'/crm/companies',icon:'▦',module:'crm',permission:'crm.read'},
-    {group:'REVENUE',label:'Leads',url:'/crm/leads',icon:'◆',module:'crm',permission:'crm.read'},
-    {group:'REVENUE',label:'Opportunities',url:'/crm/opportunities',icon:'◈',module:'crm',permission:'crm.read'},
-    {group:'REVENUE',label:'Pipeline',url:'/pipeline',icon:'▤',module:'crm',permission:'crm.read'},
-    {group:'REVENUE',label:'Meetings',url:'/meetings',icon:'◷',module:'crm',permission:'crm.read'},
+    {group:'ACQUIRE',label:'Prospect Discovery',url:'/discover',icon:'⌕',module:'crm',permission:'crm.read'},
+    {group:'ACQUIRE',label:'Campaigns',url:'/campaigns',icon:'↗',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Companies',url:'/crm/companies',icon:'▦',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Contacts',url:'/crm/contacts',icon:'◎',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Qualified Leads',url:'/crm/leads',icon:'◆',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Opportunities',url:'/crm/opportunities',icon:'◈',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Pipeline',url:'/pipeline',icon:'▤',module:'crm',permission:'crm.read'},
+    {group:'CONVERT',label:'Demos & Meetings',url:'/meetings',icon:'◷',module:'crm',permission:'crm.read'},
+    {group:'CUSTOMER SERVICE',label:'Customer Inbox',url:'/inbox',icon:'▱',module:'inbox',permission:'conversations.read'},
+    {group:'CUSTOMER SERVICE',label:'Issues & Tickets',url:'/tickets',icon:'▣',module:'ticketing',permission:'tickets.read'},
     {group:'BUSINESS AUTOMATION',label:'Business Assistants',url:'/ai/agents',icon:'✦',module:'ai',permission:'agents.read'},
     {group:'BUSINESS AUTOMATION',label:'Knowledge',url:'/knowledge',icon:'▥',module:'knowledge',permission:'knowledge.read'},
     {group:'BUSINESS AUTOMATION',label:'Knowledge Gaps',url:'/knowledge/gaps',icon:'△',module:'knowledge',permission:'knowledge.read'},
