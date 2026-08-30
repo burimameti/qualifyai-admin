@@ -57,18 +57,55 @@ button:disabled {
 }
 .workspace b,
 .shell nav a {
-  font-size: 13px;
+  font-size: 14px;
 }
 .workspace span {
   font-size: 11px;
 }
 .shell nav label {
+  margin: 25px 12px 9px;
+  color: #77738f;
   font-size: 10px;
-  margin: 22px 10px 8px;
+  letter-spacing: .12em;
 }
 .shell nav a {
-  min-height: 42px;
-  padding: 10px 12px;
+  min-height: 47px;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding: 8px 11px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: #c7c5d4;
+  font-weight: 590;
+  letter-spacing: -.08px;
+}
+.shell nav a > span {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #343149;
+  border-radius: 9px;
+  background: #211f35;
+  color: #aaa6bd;
+  font-size: 14px;
+}
+.shell nav a:hover {
+  border-color: #3a3654;
+  background: #211f36;
+  color: #fff;
+}
+.shell nav a.active {
+  border-color: #6757c8;
+  background: linear-gradient(90deg, #332b69, #262142);
+  color: #fff;
+  box-shadow: 0 8px 20px #08071145;
+}
+.shell nav a.active > span {
+  border-color: #7865ee;
+  background: #5b3df5;
+  color: #fff;
 }
 .shell > main {
   grid-column: 2;
@@ -362,6 +399,18 @@ button:disabled {
   color: inherit;
   font-size: 12px;
 }
+.data-state {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  text-align: center;
+}
+.data-state b { color: var(--text); font-size: 16px; }
+.data-state span { max-width: 460px; font-size: 12px; }
 .product-journey {
   margin-bottom: 18px;
   padding: 22px;

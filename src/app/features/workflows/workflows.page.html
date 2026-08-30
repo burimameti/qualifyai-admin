@@ -1,17 +1,32 @@
 <qai-page-header
-  title="Workflow Designer"
-  subtitle="Build a complete business process in clear steps, review it and launch with control."
+  [title]="view === 'list' ? 'Workflows' : 'Workflow Designer'"
+  [subtitle]="view === 'list' ? 'Create, review and manage every automated business process.' : 'Build a complete business process in clear steps, review it and launch with control.'"
 >
-  <select [(ngModel)]="activeId" (change)="loadDesigner()">
+  <button *ngIf="view === 'designer'" (click)="view = 'list'">← All workflows</button>
+  <select *ngIf="view === 'designer'" [(ngModel)]="activeId" (change)="loadDesigner()">
     <option value="" disabled>Select workflow</option>
     <option *ngFor="let flow of flows" [value]="flow.id">{{ flow.name }}</option>
   </select>
-  <button (click)="templateOpen = true">Use template</button
-  ><button (click)="newOpen = true">New workflow</button>
-  <button class="primary" [disabled]="saving || !activeId" (click)="save()">
+  <button *ngIf="view === 'list'" (click)="templateOpen = true">Use template</button>
+  <button *ngIf="view === 'list'" class="primary" (click)="newOpen = true">+ New workflow</button>
+  <button *ngIf="view === 'designer'" class="primary" [disabled]="saving || !activeId" (click)="save()">
     {{ saving ? 'Saving…' : 'Save workflow' }}
   </button>
 </qai-page-header>
+
+<ng-template #workflowList>
+  <div class="workflow-toolbar"><div><b>{{ flows.length }}</b><span>Total workflows</span></div><div><b>{{ activeWorkflowCount }}</b><span>Active</span></div><label>⌕<input [(ngModel)]="workflowQuery" placeholder="Search workflows" /></label></div>
+  <section class="workflow-list" *ngIf="visibleFlows.length; else noWorkflows">
+    <article *ngFor="let flow of visibleFlows" (click)="openFlow(flow)">
+      <header><i>⌁</i><span class="pill" [class.success]="flow.active">{{ flow.active === false ? 'Draft' : 'Active' }}</span></header>
+      <h3>{{ flow.name }}</h3><p>{{ flowSummary(flow) }}</p>
+      <footer><span>{{ flow.createdAtUtc ? (flow.createdAtUtc | date:'mediumDate') : 'Ready to configure' }}</span><button type="button" (click)="$event.stopPropagation(); openFlow(flow)">Open designer →</button></footer>
+    </article>
+  </section>
+  <ng-template #noWorkflows><div class="workflow-empty"><i>⌁</i><h2>No workflows yet</h2><p>Start from a proven business process or create one from scratch.</p><button (click)="templateOpen = true">Browse templates</button><button class="primary" (click)="newOpen = true">Create workflow</button></div></ng-template>
+</ng-template>
+
+<ng-container *ngIf="view === 'designer'; else workflowList">
 
 <section class="summary">
   <div>
@@ -120,6 +135,7 @@
     ><aside class="inspector placeholder">← Select a step to configure it.</aside></ng-template
   >
 </div>
+</ng-container>
 
 <qai-modal [open]="templateOpen" title="Choose a business workflow" (close)="templateOpen = false"
   ><div class="templates">

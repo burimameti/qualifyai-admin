@@ -28,6 +28,12 @@ interface Template {
   outcome: string;
   steps: Array<[StepType, string, string]>;
 }
+interface WorkflowSummary {
+  id: string;
+  name: string;
+  active?: boolean;
+  createdAtUtc?: string;
+}
 
 @Component({
   standalone: true,
@@ -36,7 +42,9 @@ interface Template {
   styleUrl: './workflows.page.css'
 })
 export class WorkflowsPage implements OnInit {
-  flows: Array<{ id: string; name: string }> = [];
+  flows: WorkflowSummary[] = [];
+  view: 'list' | 'designer' = 'list';
+  workflowQuery = '';
   activeId = '';
   nodes: Step[] = [];
   edges: Edge[] = [];
@@ -109,6 +117,13 @@ export class WorkflowsPage implements OnInit {
   get activeName(): string {
     return this.flows.find((x) => x.id === this.activeId)?.name || 'Select a workflow';
   }
+  get activeWorkflowCount(): number {
+    return this.flows.filter((x) => x.active !== false).length;
+  }
+  get visibleFlows(): WorkflowSummary[] {
+    const term = this.workflowQuery.trim().toLowerCase();
+    return this.flows.filter((x) => !term || x.name.toLowerCase().includes(term));
+  }
   get readiness(): number {
     const checks = [
       this.nodes.some((x) => x.type === 'start'),
@@ -119,13 +134,18 @@ export class WorkflowsPage implements OnInit {
     return this.nodes.length ? checks.filter(Boolean).length * 25 : 0;
   }
   load(): void {
-    this.data.list().subscribe((r) => {
-      this.flows = r;
-      if (r.length && !this.activeId) {
-        this.activeId = r[0].id;
-        this.loadDesigner();
-      }
-    });
+    this.data.list().subscribe({ next: (r) => (this.flows = r), error: (e) => (this.error = this.apiError(e, 'Workflows could not be loaded.')) });
+  }
+  openFlow(flow: WorkflowSummary): void {
+    this.activeId = flow.id;
+    this.view = 'designer';
+    this.loadDesigner();
+  }
+  flowSummary(flow: WorkflowSummary): string {
+    const name = flow.name.toLowerCase();
+    if (name.includes('logistic') || name.includes('freight')) return 'Qualify demand, control outreach and create sales meetings.';
+    if (name.includes('support') || name.includes('ticket')) return 'Classify customer issues and route safe resolutions.';
+    return 'Business process with configurable rules, actions and human approvals.';
   }
   createFlow(): void {
     this.data.create({ name: this.newName, active: true }).subscribe((flow) => {
@@ -134,6 +154,7 @@ export class WorkflowsPage implements OnInit {
       this.nodes = [this.makeStep('start', 0, 'Workflow started', 'Manual start')];
       this.rebuildEdges();
       this.selected = this.nodes[0];
+      this.view = 'designer';
       this.newName = '';
       this.newOpen = false;
       this.message = 'Workflow created. Add the next business step.';
@@ -144,6 +165,7 @@ export class WorkflowsPage implements OnInit {
       next: (flow) => {
         this.activeId = flow.id;
         this.nodes = template.steps.map((x, i) => this.makeStep(x[0], i, x[1], x[2]));
+        this.view = 'designer';
         this.rebuildEdges();
         this.data.saveDesigner(flow.id, { nodes: this.nodes, edges: this.edges }).subscribe({
           next: () => {
@@ -160,11 +182,11 @@ export class WorkflowsPage implements OnInit {
   }
   loadDesigner(): void {
     if (this.activeId)
-      this.data.designer(this.activeId).subscribe((r) => {
+      this.data.designer(this.activeId).subscribe({ next: (r) => {
         this.nodes = r.nodes || [];
         this.edges = r.edges || [];
         this.selected = this.nodes[0] || null;
-      });
+      }, error: (e) => (this.error = this.apiError(e, 'Workflow details could not be loaded.')) });
   }
   add(type: StepType): void {
     if (!this.activeId) {
@@ -278,5 +300,8 @@ export class WorkflowsPage implements OnInit {
         handoff: 'Human approval'
       } as Record<StepType, string>
     )[type];
+  }
+  private apiError(error: any, fallback: string): string {
+    return error?.error?.detail || error?.error?.title || (error?.status ? `${fallback} API returned ${error.status}.` : fallback);
   }
 }
