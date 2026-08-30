@@ -401,12 +401,13 @@ import { AcquisitionService } from "./acquisition.service";
       (close)="bulkOpen = false"
       ><form
         class="form"
-        (ngSubmit)="bulkStep === 2 ? importCsv() : nextBulk()"
+        (ngSubmit)="bulkStep === 3 ? importDataset() : nextBulk()"
       >
         <qai-wizard-steps
-          [steps]="['Upload', 'Validate', 'Create audience']"
+          [steps]="['Upload', 'Map fields', 'Validate', 'Create audience']"
           [descriptions]="[
             'Choose the source',
+            'Match your columns',
             'Review and confirm',
             'Name the resulting list',
           ]"
@@ -415,17 +416,19 @@ import { AcquisitionService } from "./acquisition.service";
         <section *ngIf="bulkStep === 0">
           <h4 class="section-title">Upload a company dataset</h4>
           <p class="section-copy">
-            Required columns: companyName and domain. Optional: contactName,
-            email, jobTitle, industry, country, fitScore and intentScore.
+            Upload a CSV or XLSX from any provider. We detect worksheets,
+            headers and likely field mappings before any record is imported.
           </p>
           <label
-            >CSV file<input
+            >Company data file<input
               type="file"
-              accept=".csv,text/csv"
-              (change)="selectCsv($event)"
+              accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              (change)="selectDataset($event)"
             /><small class="field-help"
-              >Maximum 10,000 companies or 15 MB.</small
+              >CSV or Excel · maximum 10,000 companies or 15 MB.</small
             ></label
+          ><label *ngIf="bulkPreview?.sheets?.length > 1"
+            >Worksheet<select [(ngModel)]="bulkSheet" name="bulkSheet" (change)="reloadSheet()"><option *ngFor="let sheet of bulkPreview.sheets" [value]="sheet">{{sheet}}</option></select><small class="field-help">The best matching worksheet is selected automatically.</small></label
           ><label
             >Recorded data source<input
               [(ngModel)]="bulkSource"
@@ -439,10 +442,18 @@ import { AcquisitionService } from "./acquisition.service";
           <p class="error" *ngIf="bulkError">{{ bulkError }}</p>
         </section>
         <section *ngIf="bulkStep === 1">
+          <h4 class="section-title">Map spreadsheet columns</h4>
+          <p class="section-copy">{{bulkPreview?.fileName}} · {{bulkPreview?.selectedSheet}} · header row {{bulkPreview?.headerRow}}. Required fields are marked.</p>
+          <div class="import-mapping">
+            <label *ngFor="let field of importFields">{{field.label}} <b *ngIf="field.required">Required</b><select [(ngModel)]="bulkMapping[field.key]" [name]="'map_'+field.key" (change)="rebuildMappedRows()"><option value="">Do not import</option><option *ngFor="let header of bulkPreview?.headers" [value]="header">{{header}}</option></select></label>
+          </div>
+          <div class="import-preview" *ngIf="bulkPreview?.sampleRows?.length"><table><thead><tr><th *ngFor="let field of mappedFields">{{field.label}}</th></tr></thead><tbody><tr *ngFor="let row of bulkRows.slice(0,5)"><td *ngFor="let field of mappedFields">{{row[field.key] || '—'}}</td></tr></tbody></table></div>
+          <p class="error" *ngIf="bulkError">{{bulkError}}</p>
+        </section>
+        <section *ngIf="bulkStep === 2">
           <h4 class="section-title">Validate before adding data</h4>
           <p class="section-copy">
-            We found {{ bulkRows.length | number }} valid company rows.
-            Importing does not send any message.
+            {{ bulkRows.length | number }} valid rows are ready. {{bulkRejected | number}} rows are incomplete and will be skipped. Importing does not send any message.
           </p>
           <qai-callout
             icon="!"
@@ -458,7 +469,7 @@ import { AcquisitionService } from "./acquisition.service";
             I confirm the source can be used for this business purpose.</label
           >
         </section>
-        <section *ngIf="bulkStep === 2">
+        <section *ngIf="bulkStep === 3">
           <h4 class="section-title">Create the first campaign audience</h4>
           <p class="section-copy">
             Imported companies will be connected to the selected ICP and placed
@@ -497,7 +508,7 @@ import { AcquisitionService } from "./acquisition.service";
             [disabled]="bulkImporting || !canContinueBulk"
           >
             {{
-              bulkStep === 2
+              bulkStep === 3
                 ? bulkImporting
                   ? "Importing…"
                   : "Import and create list"
@@ -563,6 +574,11 @@ export class DiscoverPage implements OnInit {
   bulkListName = "European logistics prospects";
   bulkConfirmed = false;
   bulkRows: any[] = [];
+  bulkPreview: any;
+  bulkFile?: File;
+  bulkSheet = "";
+  bulkMapping: Record<string, string> = {};
+  bulkRejected = 0;
   bulkError = "";
   icpStep = 0;
   bulkStep = 0;
@@ -596,6 +612,18 @@ export class DiscoverPage implements OnInit {
     sourceUrl: "",
     score: 15,
   };
+  readonly importFields = [
+    { key: "companyName", label: "Company name", required: true },
+    { key: "domain", label: "Website / domain", required: true },
+    { key: "contactName", label: "Contact name", required: false },
+    { key: "email", label: "Business email", required: false },
+    { key: "jobTitle", label: "Job title", required: false },
+    { key: "industry", label: "Industry", required: false },
+    { key: "country", label: "Country", required: false },
+    { key: "source", label: "Row source", required: false },
+    { key: "fitScore", label: "Fit score", required: false },
+    { key: "intentScore", label: "Intent score", required: false },
+  ];
   constructor(
     private data: AcquisitionService,
     private router: Router,
@@ -642,11 +670,14 @@ export class DiscoverPage implements OnInit {
   get canContinueBulk() {
     if (this.bulkStep === 0)
       return (
-        !!this.bulkRows.length && !!this.bulkSource.trim() && !this.bulkError
+        !!this.bulkPreview && !!this.bulkSource.trim() && !this.bulkError
       );
-    if (this.bulkStep === 1) return this.bulkConfirmed;
+    if (this.bulkStep === 1)
+      return !!this.bulkMapping["companyName"] && !!this.bulkMapping["domain"] && !!this.bulkRows.length && !this.bulkError;
+    if (this.bulkStep === 2) return this.bulkConfirmed;
     return !!this.bulkListName.trim();
   }
+  get mappedFields() { return this.importFields.filter((field) => !!this.bulkMapping[field.key]); }
   openIcp() {
     this.icpStep = 0;
     this.icpOpen = true;
@@ -658,10 +689,16 @@ export class DiscoverPage implements OnInit {
     this.bulkStep = 0;
     this.bulkError = "";
     this.bulkConfirmed = false;
+    this.bulkPreview = undefined;
+    this.bulkFile = undefined;
+    this.bulkRows = [];
+    this.bulkMapping = {};
+    this.bulkRejected = 0;
     this.bulkOpen = true;
   }
   nextBulk() {
-    if (this.canContinueBulk && this.bulkStep < 2) this.bulkStep++;
+    if (this.bulkStep === 1) this.rebuildMappedRows();
+    if (this.canContinueBulk && this.bulkStep < 3) this.bulkStep++;
   }
   get allSelected() {
     return (
@@ -715,29 +752,55 @@ export class DiscoverPage implements OnInit {
       this.data.overview().subscribe((x) => (this.overview = x));
     });
   }
-  selectCsv(event: Event) {
+  selectDataset(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
+    this.bulkFile = file;
+    this.bulkPreview = undefined;
     this.bulkRows = [];
     this.bulkError = "";
     if (!file) return;
     if (file.size > 15_000_000) {
-      this.bulkError = "The CSV must be smaller than 15 MB.";
+      this.bulkError = "The import file must be smaller than 15 MB.";
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        this.bulkRows = this.parseCsv(String(reader.result || ""));
-        if (!this.bulkRows.length)
-          this.bulkError = "No valid company rows were found.";
-      } catch (error) {
-        this.bulkError =
-          error instanceof Error ? error.message : "CSV could not be read.";
-      }
-    };
-    reader.readAsText(file);
+    this.loadPreview();
   }
-  importCsv() {
+  reloadSheet() { if (this.bulkFile) this.loadPreview(this.bulkSheet); }
+  private loadPreview(sheet = "") {
+    if (!this.bulkFile) return;
+    this.bulkImporting = true;
+    this.bulkError = "";
+    this.data.previewProspectImport(this.bulkFile, sheet).subscribe({
+      next: (preview) => {
+        this.bulkPreview = preview;
+        this.bulkSheet = preview.selectedSheet;
+        this.bulkMapping = { ...preview.suggestedMappings };
+        this.rebuildMappedRows();
+        this.bulkImporting = false;
+      },
+      error: (error) => {
+        this.bulkImporting = false;
+        this.bulkError = error?.error?.detail || "The company dataset could not be read.";
+      },
+    });
+  }
+  rebuildMappedRows() {
+    const sourceRows: any[] = this.bulkPreview?.rows || [];
+    const mapped = sourceRows.map((source) => {
+      const row: any = {};
+      for (const field of this.importFields) {
+        const header = this.bulkMapping[field.key];
+        row[field.key] = header ? source[header] ?? "" : "";
+      }
+      row.fitScore = Math.max(0, Math.min(100, Number(row.fitScore) || 0));
+      row.intentScore = Math.max(0, Math.min(100, Number(row.intentScore) || 0));
+      return row;
+    });
+    this.bulkRows = mapped.filter((row) => String(row.companyName).trim() && String(row.domain).trim());
+    this.bulkRejected = mapped.length - this.bulkRows.length;
+    this.bulkError = !this.bulkMapping["companyName"] || !this.bulkMapping["domain"] ? "Map both Company name and Website / domain." : "";
+  }
+  importDataset() {
     if (!this.bulkRows.length || !this.bulkConfirmed) return;
     this.bulkImporting = true;
     this.data
@@ -753,7 +816,7 @@ export class DiscoverPage implements OnInit {
           this.bulkImporting = false;
           this.bulkOpen = false;
           this.bulkStep = 0;
-          this.message = `${result.imported} imported; ${result.duplicates} duplicates and ${result.rejected} invalid rows skipped.`;
+          this.message = `${result.imported} imported; ${result.duplicates} duplicates and ${result.rejected + this.bulkRejected} invalid rows skipped.`;
           this.bulkRows = [];
           this.load();
           if (
@@ -769,61 +832,6 @@ export class DiscoverPage implements OnInit {
           this.bulkError = error?.error?.detail || "Company import failed.";
         },
       });
-  }
-  private parseCsv(text: string) {
-    const lines = text
-      .replace(/^\uFEFF/, "")
-      .split(/\r?\n/)
-      .filter((line) => line.trim());
-    if (lines.length < 2)
-      throw new Error("CSV requires a header and at least one company.");
-    if (lines.length > 10_001)
-      throw new Error("Maximum 10,000 companies per import.");
-    const parseLine = (line: string) => {
-      const values: string[] = [];
-      let value = "";
-      let quoted = false;
-      for (let index = 0; index < line.length; index++) {
-        const character = line[index];
-        if (character === '"' && line[index + 1] === '"') {
-          value += '"';
-          index++;
-        } else if (character === '"') quoted = !quoted;
-        else if (character === "," && !quoted) {
-          values.push(value.trim());
-          value = "";
-        } else value += character;
-      }
-      values.push(value.trim());
-      return values;
-    };
-    const headers = parseLine(lines[0]).map((header) =>
-      header.replace(/[ _-]/g, "").toLowerCase(),
-    );
-    const column = (name: string) => headers.indexOf(name.toLowerCase());
-    const company = column("companyname");
-    const domain = column("domain");
-    if (company < 0 || domain < 0)
-      throw new Error("CSV must include companyName and domain columns.");
-    const read = (row: string[], name: string) => {
-      const index = column(name);
-      return index < 0 ? "" : row[index] || "";
-    };
-    return lines
-      .slice(1)
-      .map(parseLine)
-      .filter((row) => row[company] && row[domain])
-      .map((row) => ({
-        companyName: row[company],
-        domain: row[domain],
-        contactName: read(row, "contactname"),
-        email: read(row, "email"),
-        jobTitle: read(row, "jobtitle"),
-        industry: read(row, "industry"),
-        country: read(row, "country"),
-        fitScore: Number(read(row, "fitscore")) || 0,
-        intentScore: Number(read(row, "intentscore")) || 0,
-      }));
   }
   addSignal() {
     if (!this.signalFor) return;

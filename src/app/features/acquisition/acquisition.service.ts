@@ -22,6 +22,13 @@ export class AcquisitionService {
   importProspects(input: any) {
     return this.api.post<any>('acquisition/prospects/import', input);
   }
+  previewProspectImport(file: File, sheetName = '', headerRow?: number) {
+    const form = new FormData();
+    form.append('file', file);
+    if (sheetName) form.append('sheetName', sheetName);
+    if (headerRow) form.append('headerRow', String(headerRow));
+    return this.api.post<any>('acquisition/prospects/import/preview', form);
+  }
   addSignal(id: string, input: any) {
     return this.api.post<any>(`acquisition/prospects/${id}/signals`, input);
   }
