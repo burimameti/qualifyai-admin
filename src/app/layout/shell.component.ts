@@ -71,14 +71,17 @@ interface NavigationItem {
 
       <main>
         <header class="app-header">
-          <button
-            type="button"
-            class="global-search"
-            (click)="openSearch()"
-            aria-label="Open navigation search"
-          >
-            <span>⌕</span><b>Search pages and modules</b><kbd>Ctrl K</kbd>
-          </button>
+          <label class="global-search">
+            <span>⌕</span>
+            <input
+              [(ngModel)]="query"
+              (input)="openSearchFromHeader()"
+              (keydown.enter)="openFirstSearchResult($event)"
+              placeholder="Search pages and modules"
+              aria-label="Search pages and modules"
+            />
+            <kbd>Ctrl K</kbd>
+          </label>
           <div class="head-actions">
             <button
               type="button"
@@ -512,6 +515,17 @@ export class ShellComponent {
     this.searchOpen = true;
     this.query = "";
     setTimeout(() => this.searchInput?.nativeElement.focus());
+  }
+  openSearchFromHeader() {
+    this.helpOpen = false;
+    this.accountOpen = false;
+    this.searchOpen = true;
+    setTimeout(() => this.searchInput?.nativeElement.focus());
+  }
+  openFirstSearchResult(event: Event) {
+    event.preventDefault();
+    const first = this.searchResults[0];
+    if (first) this.go(first.url);
   }
   toggleHelp() {
     const open = !this.helpOpen;

@@ -1,8 +1,8 @@
 /* One action system for every feature screen. Navigation/header controls remain independent. */
-:root{--action-blue:#2563eb;--action-blue-hover:#1d4ed8;--action-soft:#eaf2ff;--action-soft-hover:#dbeafe;--action-soft-border:#c7d9ff;--action-danger:#be123c;--action-danger-soft:#fff1f2;--action-danger-border:#fecdd3}
+:root{--action-blue:#2563eb;--action-blue-hover:#1d4ed8;--action-soft:#fff;--action-soft-hover:#f8fafc;--action-soft-border:#d8e0eb;--action-danger:#be123c;--action-danger-soft:#fff1f2;--action-danger-border:#fecdd3}
 .page button{align-items:center;border-radius:9px;display:inline-flex;font-weight:700;gap:6px;justify-content:center;min-height:34px;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}
-.page button:not(.primary):not(.danger):not(.link):not(.pipeline-step):not(.guardrail-button):not(.wizard-step):not(.conv){background:var(--action-soft)!important;border-color:var(--action-soft-border)!important;box-shadow:0 2px 5px #1d4ed80a;color:#1d4ed8!important}
-.page button:not(.primary):not(.danger):not(.link):not(.pipeline-step):not(.guardrail-button):not(.wizard-step):not(.conv):hover{background:var(--action-soft-hover)!important;border-color:#a9c2f4!important;box-shadow:0 4px 10px #1d4ed814;transform:translateY(-1px)}
+.page button:not(.primary):not(.danger):not(.link):not(.pipeline-step):not(.guardrail-button):not(.wizard-step):not(.conv){background:var(--action-soft)!important;border-color:var(--action-soft-border)!important;box-shadow:none;color:#475569!important}
+.page button:not(.primary):not(.danger):not(.link):not(.pipeline-step):not(.guardrail-button):not(.wizard-step):not(.conv):hover{background:var(--action-soft-hover)!important;border-color:#b8c5d6!important;box-shadow:0 3px 9px #0f172a0c;transform:translateY(-1px)}
 .page button.primary{background:linear-gradient(180deg,#3474ed,var(--action-blue))!important;border-color:var(--action-blue)!important;box-shadow:0 4px 10px #2563eb24;color:#fff!important}
 .page button.primary:hover{background:linear-gradient(180deg,var(--action-blue),var(--action-blue-hover))!important;border-color:var(--action-blue-hover)!important;box-shadow:0 6px 14px #2563eb2e;transform:translateY(-1px)}
 .page button.danger{background:var(--action-danger-soft)!important;border-color:var(--action-danger-border)!important;color:var(--action-danger)!important}

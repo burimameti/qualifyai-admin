@@ -32,6 +32,19 @@
   box-shadow: none;
   text-align: left;
 }
+.global-search input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172033;
+  font-size: 12px;
+}
+.global-search input::placeholder {
+  color: #667085;
+}
 .global-search:hover {
   border-color: #b8aaff;
   background: #fff;
@@ -40,10 +53,6 @@
 .global-search > span {
   color: #5b3df5;
   font-size: 19px;
-}
-.global-search > b {
-  font-size: 12px;
-  font-weight: 500;
 }
 .global-search kbd,
 .command-palette kbd {
@@ -347,7 +356,7 @@
   .global-search {
     width: 58px;
   }
-  .global-search > b,
+  .global-search input,
   .global-search kbd {
     display: none;
   }

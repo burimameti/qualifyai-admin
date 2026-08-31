@@ -28,6 +28,8 @@
 
 .page :is(.table-wrap,.panel) table{border-collapse:separate;border-spacing:0;width:100%}
 .page .panel.table-wrap>table{margin-left:-20px;margin-right:-20px;width:calc(100% + 40px)}
+.page .panel.table-wrap>header{margin-bottom:0!important}
+.page .panel.table-wrap>header+table{margin-top:0}
 .page table thead th{background:#eaf2ff!important;border-bottom:1px solid #c7d9ff!important;border-top:1px solid #d7e3f5;color:#475569!important;font-size:11px!important;font-weight:800!important;letter-spacing:.055em;padding:13px 14px!important;text-transform:uppercase}
 .page table thead th:first-child{padding-left:18px!important}.page table thead th:last-child{padding-right:18px!important}
 .page table tbody td{background:#fff;border-bottom:1px solid #edf1f6!important;color:#475569;font-size:13px!important;padding:14px!important;vertical-align:middle}
@@ -36,7 +38,10 @@
 .page table tbody tr:hover td:first-child{box-shadow:inset 3px 0 #2563eb}
 .page table tbody tr:last-child td{border-bottom:0!important}
 .page table td b{color:#1e293b;font-weight:750}.page table td small{color:#94a3b8!important;font-size:11px!important;line-height:1.4}
-.page table td .pill{font-size:11px;white-space:nowrap}
+.page table td .pill{font-size:11px;font-weight:750;white-space:nowrap}
+.page .pill.status-pending,.page .pill.status-queued{background:#fff3d6!important;border:1px solid #fed68a;color:#a85109!important}
+.page .pill.status-success,.page .pill.status-sent,.page .pill.status-delivered{background:#dcfce7!important;border:1px solid #bbf7d0;color:#166534!important}
+.page .pill.status-failed{background:#fff1f2!important;border:1px solid #fecdd3;color:#be123c!important}
 
 .page :is(.empty,.no-records,.data-state,.queue-empty,.contact-empty){background:linear-gradient(180deg,#fbfdff,#f7faff);border:1px dashed #cbdcf5;border-radius:12px;color:#64748b;margin:14px;padding:32px;text-align:center}
 .page :is(.empty,.no-records,.data-state,.queue-empty,.contact-empty)>:is(b,strong){color:#334155}

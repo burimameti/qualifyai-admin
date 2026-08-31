@@ -40,7 +40,7 @@
       <div class="campaign-main">
         <header>
           <strong>{{ campaign.name }}</strong
-          ><span class="pill">{{ status(campaign.status) }}</span>
+          ><span class="pill" [ngClass]="'status-' + status(campaign.status).toLowerCase()">{{ status(campaign.status) }}</span>
         </header>
         <div class="campaign-data">
           <span><small>Goal</small><b>{{ campaign.goal || 'Book demo' }}</b></span>
@@ -142,7 +142,7 @@
         <td>{{ item.email }}</td>
         <td>{{ item.subject }}</td>
         <td>
-          <span class="pill">{{ messageStatus(item.status) }}</span>
+          <span class="pill" [ngClass]="'status-' + messageStatus(item.status).toLowerCase()">{{ messageStatus(item.status) }}</span>
         </td>
         <td>
           <button class="queue-action"
