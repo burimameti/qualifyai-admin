@@ -31,7 +31,7 @@ export class PageHeader {
     >
       <header>
         <div>
-          <span class="section-kicker">Guided setup</span>
+          <span class="section-kicker">Workspace action</span>
           <h3>{{ title }}</h3>
         </div>
         <button

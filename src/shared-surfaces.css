@@ -46,4 +46,10 @@
 .page :is(.empty,.no-records,.data-state,.queue-empty,.contact-empty){background:linear-gradient(180deg,#fbfdff,#f7faff);border:1px dashed #cbdcf5;border-radius:12px;color:#64748b;margin:14px;padding:32px;text-align:center}
 .page :is(.empty,.no-records,.data-state,.queue-empty,.contact-empty)>:is(b,strong){color:#334155}
 
+/* Major cards share one structure; compact operational cards keep their own semantics. */
+.page :is(.panel,.data-card,.plan-card,.revenue-card,.campaigns,.safety,.contacts-card,.companies-card)>footer{align-items:center;border-top:1px solid #e7ecf3;display:flex;gap:9px;justify-content:flex-end;margin-top:18px;padding-top:15px}
+.page :is(.module-card,.pipeline-overview>article,.automation-list>article,.tools>article,.calendar-strip>article){border-color:var(--surface-border)!important;border-radius:14px!important;box-shadow:0 4px 14px #0f172a08;transition:border-color .16s,box-shadow .16s,transform .16s}
+.page :is(.module-card,.pipeline-overview>article,.automation-list>article,.tools>article,.calendar-strip>article):hover{border-color:#b9c9df!important;box-shadow:0 9px 22px #0f172a0f}
+.page .settings-grid>.panel{overflow:hidden}.page .settings-grid>.panel>h3:first-child{background:linear-gradient(110deg,var(--surface-header),var(--surface-header-end));border-bottom:1px solid #d8e4f5;color:var(--surface-title);font-size:15px;margin:-20px -20px 18px;padding:18px 20px}
+
 @media(max-width:760px){.page :is(.panel,.data-card,.company-card,.plan-card,.revenue-card,.integration-grid>article,.pack-grid>article,.gap-cards>article){padding:16px}.page .panel>header{margin:-16px -16px 16px!important;padding:14px 16px!important}.page .panel.table-wrap>table{margin-left:-16px;margin-right:-16px;width:calc(100% + 32px)}.page table thead th,.page table tbody td{padding:11px!important}}
