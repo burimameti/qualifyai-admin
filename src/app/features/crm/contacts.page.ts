@@ -32,7 +32,7 @@ import { CrmService } from './crm.service';
             <td><a class="email-link" [href]="'mailto:' + x.email">{{ x.email || '—' }}</a></td><td>{{ x.phone || '—' }}</td>
             <td><span class="lifecycle" [class.customer]="x.lifecycleStage === 'customer'" [class.lead]="x.lifecycleStage === 'lead'">{{ x.lifecycleStage || 'visitor' }}</span></td>
             <td>{{ x.createdAtUtc | date: 'mediumDate' }}</td>
-            <td><div class="row-actions"><button class="edit-action" (click)="open(x)">✎ Edit</button><button class="delete-action" (click)="remove(x)">Delete</button></div></td>
+            <td><div class="row-actions"><button class="edit-action" (click)="open(x)">✎ Edit</button><button class="danger delete-action" (click)="remove(x)">Delete</button></div></td>
           </tr></tbody>
         </table>
         <div class="contact-empty" *ngIf="!visible.length"><b>◎</b><strong>No contacts found</strong><span>Change the filters or add the first contact.</span></div>

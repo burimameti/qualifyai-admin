@@ -15,10 +15,10 @@
     </p>
   </div>
   <ol aria-label="Outreach pipeline">
-    <li class="done"><button type="button" (click)="openPipelineStep(1)"><b>01</b>Audience</button></li>
-    <li><button type="button" (click)="openPipelineStep(3)"><b>02</b>Message</button></li>
-    <li><button type="button" (click)="showApprovalQueue()"><b>03</b>Approval</button></li>
-    <li><button type="button" (click)="openDemos()"><b>04</b>Demo</button></li>
+    <li class="done"><button class="pipeline-step" type="button" (click)="openPipelineStep(1)"><b>01</b>Audience</button></li>
+    <li><button class="pipeline-step" type="button" (click)="openPipelineStep(3)"><b>02</b>Message</button></li>
+    <li><button class="pipeline-step" type="button" (click)="showApprovalQueue()"><b>03</b>Approval</button></li>
+    <li><button class="pipeline-step" type="button" (click)="openDemos()"><b>04</b>Demo</button></li>
   </ol>
 </section>
 <p class="notice success" *ngIf="message">{{ message }}</p>
@@ -51,7 +51,7 @@
       </div>
       <button class="activity-action" (click)="inspect(campaign)">Activity</button>
       <button
-        class="campaign-action"
+        class="primary campaign-action"
         *ngIf="campaign.status === 0 || campaign.status === 3"
         (click)="start(campaign)"
       >
@@ -74,7 +74,7 @@
     <h3>Safe by design</h3>
     <ul>
       <li *ngFor="let guardrail of guardrails">
-        <button type="button" (click)="openGuardrail(guardrail)">
+        <button class="guardrail-button" type="button" (click)="openGuardrail(guardrail)">
           <b>{{ guardrail.number }}</b><span><strong>{{ guardrail.title }}</strong><small>{{ guardrail.summary }}</small></span><i>›</i>
         </button>
       </li>
@@ -187,6 +187,7 @@
   (close)="show = false"
   ><nav class="steps">
     <button
+      class="wizard-step"
       *ngFor="let label of ['Audience', 'Sender', 'Sequence', 'Review']; let i = index"
       [class.active]="builderStep === i + 1"
       [class.done]="builderStep > i + 1"
