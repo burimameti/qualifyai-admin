@@ -22,6 +22,7 @@
               "src/styles.css",
               "src/product-design.css",
               "src/app-header.css",
+              "src/shared-surfaces.css",
               "src/shared-actions.css"
             ]
           },
