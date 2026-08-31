@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
+import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Modal, PageHeader } from "../../shared/ui";
 import { AcquisitionService } from "./acquisition.service";
 
@@ -12,6 +12,7 @@ import { AcquisitionService } from "./acquisition.service";
   styleUrl: "./campaigns.page.css",
 })
 export class CampaignsPage implements OnInit {
+  @ViewChild("approvalQueue") approvalQueue?: ElementRef<HTMLElement>;
   rows: any[] = [];
   lists: any[] = [];
   messages: any[] = [];
@@ -23,11 +24,20 @@ export class CampaignsPage implements OnInit {
   busy = false;
   message = "";
   error = "";
+  guardrailOpen = false;
+  selectedGuardrail: any;
+  readonly guardrails = [
+    { number: 1, title: "Verified sender", summary: "Mailbox/domain ownership required", detail: "Only a verified mailbox and domain can be used as the sender for a live campaign.", result: "Prevents spoofed or incorrectly configured sender identities.", action: "Manage senders", route: "/integrations" },
+    { number: 2, title: "Suppression check", summary: "Opt-outs never receive outreach", detail: "Every recipient is checked against the tenant suppression list before a message is queued.", result: "Protects unsubscribed contacts and preserves sender reputation.", action: "View suppression list", route: "/integrations" },
+    { number: 3, title: "Human approval", summary: "Review before each real send", detail: "A campaign can prepare a message, but it cannot leave the platform until a person approves it.", result: "Keeps message quality and launch decisions under human control.", action: "Open approval queue", target: "approval" },
+    { number: 4, title: "Stop on reply", summary: "Sequence pauses automatically", detail: "As soon as a recipient replies, the remaining scheduled follow-ups are stopped automatically.", result: "Prevents awkward follow-ups after a real conversation has started.", action: "Open inbox", route: "/inbox" },
+  ];
   form: any = this.emptyForm();
 
   constructor(
     private readonly data: AcquisitionService,
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +48,9 @@ export class CampaignsPage implements OnInit {
   }
   get selectedList(): any {
     return this.lists.find((x) => x.id === this.form.targetListId);
+  }
+  get pendingMessages(): number {
+    return this.messages.filter((x) => x.status === 0).length;
   }
   get canContinue(): boolean {
     if (this.builderStep === 1)
@@ -88,6 +101,31 @@ export class CampaignsPage implements OnInit {
     this.builderStep = 1;
     this.error = "";
     this.show = true;
+  }
+  openPipelineStep(step: number): void {
+    this.form = this.emptyForm();
+    this.builderStep = step;
+    this.error = "";
+    this.show = true;
+  }
+  showApprovalQueue(): void {
+    this.approvalQueue?.nativeElement.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  openDemos(): void {
+    void this.router.navigate(["/meetings"]);
+  }
+  openGuardrail(guardrail: any): void {
+    this.selectedGuardrail = guardrail;
+    this.guardrailOpen = true;
+  }
+  openGuardrailAction(): void {
+    const guardrail = this.selectedGuardrail;
+    this.guardrailOpen = false;
+    if (guardrail?.target === "approval") {
+      setTimeout(() => this.showApprovalQueue());
+      return;
+    }
+    if (guardrail?.route) void this.router.navigate([guardrail.route]);
   }
   next(): void {
     if (this.canContinue && this.builderStep < 4) this.builderStep++;

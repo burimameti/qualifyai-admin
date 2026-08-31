@@ -2,7 +2,7 @@
   title="Campaign Command Center"
   subtitle="Turn a qualified audience into controlled conversations and booked demos."
 >
-  <button (click)="load()">↻ Refresh</button
+  <button class="refresh-action" (click)="load()">↻ Refresh data</button
   ><button class="primary" (click)="openBuilder()">+ Build campaign</button>
 </qai-page-header>
 <section class="hero">
@@ -14,11 +14,11 @@
       approval.
     </p>
   </div>
-  <ol>
-    <li class="done">Audience</li>
-    <li>Message</li>
-    <li>Approval</li>
-    <li>Demo</li>
+  <ol aria-label="Outreach pipeline">
+    <li class="done"><button type="button" (click)="openPipelineStep(1)"><b>01</b>Audience</button></li>
+    <li><button type="button" (click)="openPipelineStep(3)"><b>02</b>Message</button></li>
+    <li><button type="button" (click)="showApprovalQueue()"><b>03</b>Approval</button></li>
+    <li><button type="button" (click)="openDemos()"><b>04</b>Demo</button></li>
   </ol>
 </section>
 <p class="notice success" *ngIf="message">{{ message }}</p>
@@ -30,35 +30,36 @@
       <div>
         <span class="eyebrow">Campaigns</span>
         <h3>Acquisition processes</h3>
+        <p>Manage the audience, sender, sequence and launch state of every process.</p>
       </div>
+      <span class="campaign-count">{{ rows.length }} total</span>
     </header>
-    <article *ngFor="let campaign of rows">
+    <div class="campaign-list">
+    <article *ngFor="let campaign of rows" [class.is-running]="campaign.status === 2">
       <div class="campaign-icon">↗</div>
-      <div>
+      <div class="campaign-main">
         <header>
           <strong>{{ campaign.name }}</strong
           ><span class="pill">{{ status(campaign.status) }}</span>
         </header>
-        <p>
-          {{ campaign.goal }} · {{ campaign.startsAtUtc ? (campaign.startsAtUtc
-          | date: 'short') : 'Not started' }}
-        </p>
-        <small>{{ campaign.senderName }} · {{ campaign.senderEmail }}</small>
-        <small
-          >{{ campaign.recipients || 0 }} recipients · {{ campaign.sent || 0 }}
-          sent · {{ campaign.replied || 0 }} replies · {{ campaign.failed || 0
-          }} failed</small
-        >
+        <div class="campaign-data">
+          <span><small>Goal</small><b>{{ campaign.goal || 'Book demo' }}</b></span>
+          <span><small>Started</small><b>{{ campaign.startsAtUtc ? (campaign.startsAtUtc | date: 'short') : 'Not started' }}</b></span>
+          <span><small>Recipients</small><b>{{ campaign.recipients || 0 }}</b><em>{{ campaign.sent || 0 }} sent · {{ campaign.replied || 0 }} replies</em></span>
+          <span><small>Sender</small><b>{{ campaign.senderName || 'Not assigned' }}</b><em>{{ campaign.senderEmail }}</em></span>
+        </div>
       </div>
-      <button (click)="inspect(campaign)">Activity</button>
+      <button class="activity-action" (click)="inspect(campaign)">Activity</button>
       <button
-        class="primary"
+        class="campaign-action"
         *ngIf="campaign.status === 0 || campaign.status === 3"
         (click)="start(campaign)"
       >
-        Start
+        Start campaign
       </button>
+      <span class="running-label" *ngIf="campaign.status === 2">● Live</span>
     </article>
+    </div>
     <div class="empty" *ngIf="!rows.length">
       <h3>No campaign yet</h3>
       <p>
@@ -72,33 +73,10 @@
     <span class="eyebrow">Launch guardrails</span>
     <h3>Safe by design</h3>
     <ul>
-      <li>
-        <b>1</b
-        ><span
-          ><strong>Verified sender</strong
-          ><small>Mailbox/domain ownership required</small></span
-        >
-      </li>
-      <li>
-        <b>2</b
-        ><span
-          ><strong>Suppression check</strong
-          ><small>Opt-outs never receive outreach</small></span
-        >
-      </li>
-      <li>
-        <b>3</b
-        ><span
-          ><strong>Human approval</strong
-          ><small>Review before each real send</small></span
-        >
-      </li>
-      <li>
-        <b>4</b
-        ><span
-          ><strong>Stop on reply</strong
-          ><small>Sequence pauses automatically</small></span
-        >
+      <li *ngFor="let guardrail of guardrails">
+        <button type="button" (click)="openGuardrail(guardrail)">
+          <b>{{ guardrail.number }}</b><span><strong>{{ guardrail.title }}</strong><small>{{ guardrail.summary }}</small></span><i>›</i>
+        </button>
       </li>
     </ul>
   </aside>
@@ -142,11 +120,12 @@
     </p></ng-template
   >
 </section>
-<section class="panel table-wrap">
+<section class="panel table-wrap approval-panel" #approvalQueue>
   <header>
     <div>
-      <b>Approval queue</b><span>Messages prepared by running campaigns</span>
+      <span class="eyebrow">Human review</span><b>Approval queue</b><span>Messages prepared by running campaigns</span>
     </div>
+    <strong>{{ pendingMessages }} pending</strong>
   </header>
   <table>
     <thead>
@@ -159,7 +138,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of messages">
+      <tr *ngFor="let item of messages" [class.awaiting]="item.status === 0">
         <td><b>{{ item.prospect }}</b><small>{{ item.contactName }}</small></td>
         <td>{{ item.email }}</td>
         <td>{{ item.subject }}</td>
@@ -167,7 +146,7 @@
           <span class="pill">{{ messageStatus(item.status) }}</span>
         </td>
         <td>
-          <button
+          <button class="queue-action"
             *ngIf="item.status === 0 && !item.approvalRequested"
             (click)="requestApproval(item)"
           >
@@ -190,8 +169,17 @@
       </tr>
     </tbody>
   </table>
-  <p *ngIf="!messages.length">No messages await review.</p>
+  <div class="queue-empty" *ngIf="!messages.length"><b>✓</b><span>No messages await review.</span></div>
 </section>
+
+<qai-modal [open]="guardrailOpen" [title]="selectedGuardrail?.title || 'Launch guardrail'" (close)="guardrailOpen = false">
+  <section class="guardrail-detail" *ngIf="selectedGuardrail">
+    <div class="guardrail-number">{{ selectedGuardrail.number }}</div>
+    <div><span>SAFE LAUNCH CONTROL</span><h3>{{ selectedGuardrail.title }}</h3><p>{{ selectedGuardrail.detail }}</p></div>
+  </section>
+  <div class="guardrail-check"><b>✓ Enforced before launch</b><span>{{ selectedGuardrail?.result }}</span></div>
+  <footer class="guardrail-footer"><button type="button" (click)="guardrailOpen = false">Close</button><button type="button" class="primary" (click)="openGuardrailAction()">{{ selectedGuardrail?.action }}</button></footer>
+</qai-modal>
 
 <qai-modal
   [open]="show"

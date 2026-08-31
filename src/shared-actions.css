@@ -1,0 +1,5 @@
+/* Utility and grid actions stay visually distinct from white content cards. */
+:where(.page-header > button:not(.primary)){background:linear-gradient(180deg,#f8fbff,#edf4ff);border-color:#cbdcf5;box-shadow:0 2px 5px #1d4ed80a;color:#1d4ed8;font-weight:700}
+:where(.page-header > button:not(.primary):hover){background:#e2ecff;border-color:#aac2ef;box-shadow:0 4px 9px #1d4ed814}
+:where(.table-wrap td button.small:not(.danger)){background:#eaf2ff;border-color:#c7d9ff;color:#1d4ed8;font-weight:700}
+:where(.table-wrap td button.small.danger){background:#fff1f2;border-color:#fecdd3;color:#be123c;font-weight:700}
