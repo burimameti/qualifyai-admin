@@ -1,19 +1,236 @@
-<qai-page-header [title]="view === 'overview' ? 'Sales Pipelines' : (selected?.name || 'New pipeline')" [subtitle]="view === 'overview' ? 'Configure repeatable sales processes and inspect their revenue.' : 'Review opportunities on the board or configure every pipeline stage.'">
-  <button *ngIf="view !== 'overview'" (click)="back()">← All pipelines</button><button *ngIf="view === 'overview'" (click)="load()">↻ Refresh</button><button *ngIf="view === 'overview'" class="primary" (click)="newPipeline()">+ Pipeline</button>
-  <button *ngIf="view !== 'overview' && selected" [class.primary]="view === 'board'" (click)="view = 'board'">Board</button><button *ngIf="view !== 'overview' && selected" [class.primary]="view === 'configuration'" (click)="view = 'configuration'">Configuration</button>
+<qai-page-header
+  [title]="view === 'overview' ? 'Sales Pipelines' : (selected?.name || 'New pipeline')"
+  [subtitle]="view === 'overview' ? 'Configure repeatable sales processes and inspect their revenue.' : 'Review opportunities on the board or configure every pipeline stage.'"
+>
+  <button *ngIf="view !== 'overview'" (click)="back()">← All pipelines</button
+  ><button *ngIf="view === 'overview'" (click)="load()">↻ Refresh</button
+  ><button *ngIf="view === 'overview'" class="primary" (click)="newPipeline()">
+    + Pipeline
+  </button>
+  <button
+    *ngIf="view !== 'overview' && selected"
+    [class.primary]="view === 'board'"
+    (click)="view = 'board'"
+  >
+    Board</button
+  ><button
+    *ngIf="view !== 'overview' && selected"
+    [class.primary]="view === 'configuration'"
+    (click)="view = 'configuration'"
+  >
+    Configuration
+  </button>
 </qai-page-header>
-<div class="callout warning" *ngIf="error"><span class="callout-icon">!</span><div><b>Action needed</b><p>{{ error }}</p></div></div><div class="pipeline-loading" *ngIf="loading">Loading pipelines…</div>
+<div class="callout warning" *ngIf="error">
+  <span class="callout-icon">!</span>
+  <div>
+    <b>Action needed</b>
+    <p>{{ error }}</p>
+  </div>
+</div>
+<div class="pipeline-loading" *ngIf="loading">Loading pipelines…</div>
 <ng-container *ngIf="!loading && view === 'overview'">
-  <div class="pipeline-overview" *ngIf="pipelines.length; else noPipelines"><article *ngFor="let pipeline of pipelines" (click)="open(pipeline)"><header><i>↗</i><span class="pill success" *ngIf="pipeline.isDefault">Default</span></header><h2>{{ pipeline.name }}</h2><p>{{ pipelineStages(pipeline.id).length }} configured stages</p><dl><div><dt>Open value</dt><dd>{{ money(pipelineValue(pipeline.id)) }}</dd></div><div><dt>Deals</dt><dd>{{ pipelineOpps(pipeline.id).length }}</dd></div></dl><footer><button (click)="$event.stopPropagation(); open(pipeline, 'configuration')">Configure</button><button class="primary" (click)="$event.stopPropagation(); open(pipeline)">Open pipeline →</button></footer></article></div>
-  <ng-template #noPipelines><section class="pipeline-empty"><i>↗</i><h2>No sales pipeline configured</h2><p>Create a pipeline, define its stages and then move opportunities through a controlled sales process.</p><button class="primary" (click)="newPipeline()">Create first pipeline</button></section></ng-template>
+  <div class="pipeline-overview" *ngIf="pipelines.length; else noPipelines">
+    <article *ngFor="let pipeline of pipelines" (click)="open(pipeline)">
+      <header>
+        <i>↗</i
+        ><span class="pill success" *ngIf="pipeline.isDefault">Default</span>
+      </header>
+      <h2>{{ pipeline.name }}</h2>
+      <p>{{ pipelineStages(pipeline.id).length }} configured stages</p>
+      <dl>
+        <div>
+          <dt>Open value</dt>
+          <dd>{{ money(pipelineValue(pipeline.id)) }}</dd>
+        </div>
+        <div>
+          <dt>Deals</dt>
+          <dd>{{ pipelineOpps(pipeline.id).length }}</dd>
+        </div>
+      </dl>
+      <footer>
+        <button
+          (click)="$event.stopPropagation(); open(pipeline, 'configuration')"
+        >
+          Configure</button
+        ><button
+          class="primary"
+          (click)="$event.stopPropagation(); open(pipeline)"
+        >
+          Open pipeline →
+        </button>
+      </footer>
+    </article>
+  </div>
+  <ng-template #noPipelines
+    ><section class="pipeline-empty">
+      <i>↗</i>
+      <h2>No sales pipeline configured</h2>
+      <p>
+        Create a pipeline, define its stages and then move opportunities through
+        a controlled sales process.
+      </p>
+      <button class="primary" (click)="newPipeline()">
+        Create first pipeline
+      </button>
+    </section></ng-template
+  >
 </ng-container>
 <ng-container *ngIf="!loading && view === 'board' && selected">
-  <div class="pipeline-summary"><div><span>Open pipeline</span><b>{{money(total)}}</b></div><div><span>Weighted pipeline</span><b>{{money(weighted)}}</b></div><div><span>Deals</span><b>{{pipelineOpps(selected.id).length}}</b></div><div><span>Stages</span><b>{{selectedStages.length}}</b></div></div>
-  <div class="kanban pipeline-board" *ngIf="selectedStages.length; else noStages"><section *ngFor="let stage of selectedStages"><header><div><b>{{stage.name}}</b><span>{{cards(stage.id).length}}</span></div><strong>{{money(stageTotal(stage.id))}}</strong></header><article draggable="true" *ngFor="let opportunity of cards(stage.id)" (dragstart)="drag=opportunity" (dragend)="drag=null" (click)="selectedOpportunity=opportunity"><span class="score hot">{{scoreFor(opportunity)}}</span><b>{{opportunity.name}}</b><small>{{money(opportunity.amount)}}</small><div><span>{{stage.probability}}% probability</span></div></article><div class="drop" (dragover)="$event.preventDefault()" (drop)="dropOn(stage.id)">Drop opportunity here</div></section></div>
-  <ng-template #noStages><section class="pipeline-empty"><h2>This pipeline has no stages</h2><p>Add stages before assigning and moving opportunities.</p><button class="primary" (click)="view='configuration'">Configure stages</button></section></ng-template>
+  <div class="pipeline-summary">
+    <div><span>Open pipeline</span><b>{{money(total)}}</b></div>
+    <div><span>Weighted pipeline</span><b>{{money(weighted)}}</b></div>
+    <div><span>Deals</span><b>{{pipelineOpps(selected.id).length}}</b></div>
+    <div><span>Stages</span><b>{{selectedStages.length}}</b></div>
+  </div>
+  <div
+    class="kanban pipeline-board"
+    *ngIf="selectedStages.length; else noStages"
+  >
+    <section *ngFor="let stage of selectedStages">
+      <header>
+        <div><b>{{stage.name}}</b><span>{{cards(stage.id).length}}</span></div>
+        <strong>{{money(stageTotal(stage.id))}}</strong>
+      </header>
+      <article
+        draggable="true"
+        *ngFor="let opportunity of cards(stage.id)"
+        (dragstart)="drag=opportunity"
+        (dragend)="drag=null"
+        (click)="selectedOpportunity=opportunity"
+      >
+        <span class="score hot">{{scoreFor(opportunity)}}</span
+        ><b>{{opportunity.name}}</b><small>{{money(opportunity.amount)}}</small>
+        <div><span>{{stage.probability}}% probability</span></div>
+      </article>
+      <div
+        class="drop"
+        (dragover)="$event.preventDefault()"
+        (drop)="dropOn(stage.id)"
+      >
+        Drop opportunity here
+      </div>
+    </section>
+  </div>
+  <ng-template #noStages
+    ><section class="pipeline-empty">
+      <h2>This pipeline has no stages</h2>
+      <p>Add stages before assigning and moving opportunities.</p>
+      <button class="primary" (click)="view='configuration'">
+        Configure stages
+      </button>
+    </section></ng-template
+  >
 </ng-container>
-<section class="pipeline-config" *ngIf="!loading && view === 'configuration'"><aside><span>PIPELINE SETUP</span><h2>{{ selected ? 'Edit pipeline' : 'Create pipeline' }}</h2><p>Name the process, choose whether it is the default, then define stages in the exact order sales will follow.</p></aside><main>
-  <form class="form" (ngSubmit)="savePipeline()"><label>Pipeline name<input [(ngModel)]="pipelineForm.name" name="pipelineName" placeholder="New business sales" required></label><label class="checkline"><input type="checkbox" [(ngModel)]="pipelineForm.isDefault" name="isDefault"> Use as the default pipeline</label><button class="primary" [disabled]="saving" type="submit">{{ saving ? 'Saving…' : (selected ? 'Save settings' : 'Create pipeline') }}</button></form>
-  <ng-container *ngIf="selected"><header class="stage-heading"><div><h3>Pipeline stages</h3><p>Probability is used to calculate weighted revenue.</p></div><b>{{ selectedStages.length }} stages</b></header><div class="stage-list"><article *ngFor="let stage of selectedStages; let index=index"><span class="stage-order">{{index+1}}</span><label>Name<input [(ngModel)]="stage.name"></label><label>Probability<input type="number" min="0" max="100" [(ngModel)]="stage.probability"><em>%</em></label><button (click)="saveStage(stage)">Save</button><button class="danger" (click)="removeStage(stage)">Delete</button></article></div><form class="add-stage" (ngSubmit)="addStage()"><label>New stage<input [(ngModel)]="stageForm.name" name="stageName" placeholder="Proposal sent" required></label><label>Probability<input type="number" min="0" max="100" [(ngModel)]="stageForm.probability" name="probability"></label><button class="primary" type="submit">+ Add stage</button></form></ng-container>
-</main></section>
-<qai-modal [open]="!!selectedOpportunity" title="Opportunity details" (close)="selectedOpportunity=null"><div class="opportunity-detail" *ngIf="selectedOpportunity as opportunity"><span class="pill">{{ opportunity.status }}</span><h2>{{ opportunity.name }}</h2><strong>{{ money(opportunity.amount) }}</strong><dl><dt>Expected close</dt><dd>{{ opportunity.expectedCloseUtc ? (opportunity.expectedCloseUtc | date:'mediumDate') : 'Not set' }}</dd><dt>Pipeline</dt><dd>{{ selected?.name }}</dd></dl><footer><button (click)="selectedOpportunity=null">Close</button></footer></div></qai-modal>
+<section class="pipeline-config" *ngIf="!loading && view === 'configuration'">
+  <aside>
+    <span>PIPELINE SETUP</span>
+    <h2>{{ selected ? 'Edit pipeline' : 'Create pipeline' }}</h2>
+    <p>
+      Name the process, choose whether it is the default, then define stages in
+      the exact order sales will follow.
+    </p>
+  </aside>
+  <main>
+    <form class="form" (ngSubmit)="savePipeline()">
+      <label
+        >Pipeline name<input
+          [(ngModel)]="pipelineForm.name"
+          name="pipelineName"
+          placeholder="New business sales"
+          required /></label
+      ><label class="checkline"
+        ><input
+          type="checkbox"
+          [(ngModel)]="pipelineForm.isDefault"
+          name="isDefault"
+        />
+        Use as the default pipeline</label
+      ><button class="primary" [disabled]="saving" type="submit">
+        {{ saving ? 'Saving…' : (selected ? 'Save settings' : 'Create pipeline')
+        }}
+      </button>
+    </form>
+    <ng-container *ngIf="selected"
+      ><header class="stage-heading">
+        <div>
+          <h3>Pipeline stages</h3>
+          <p>Probability is used to calculate weighted revenue.</p>
+        </div>
+        <b>{{ selectedStages.length }} stages</b>
+      </header>
+      <div class="stage-list">
+        <article *ngFor="let stage of selectedStages; let index=index">
+          <span class="stage-order">{{index+1}}</span
+          ><label>Name<input [(ngModel)]="stage.name" /></label
+          ><label
+            >Probability<input
+              type="number"
+              min="0"
+              max="100"
+              [(ngModel)]="stage.probability"
+            /><em>%</em></label
+          ><button (click)="saveStage(stage)">Save</button
+          ><button class="danger" (click)="removeStage(stage)">Delete</button>
+        </article>
+      </div>
+      <form class="add-stage" (ngSubmit)="addStage()">
+        <label
+          >New stage<input
+            [(ngModel)]="stageForm.name"
+            name="stageName"
+            placeholder="Proposal sent"
+            required /></label
+        ><label
+          >Probability<input
+            type="number"
+            min="0"
+            max="100"
+            [(ngModel)]="stageForm.probability"
+            name="probability" /></label
+        ><button class="primary" type="submit">+ Add stage</button>
+      </form></ng-container
+    >
+  </main>
+</section>
+<qai-modal
+  [open]="!!selectedOpportunity"
+  title="Opportunity details"
+  (close)="selectedOpportunity=null"
+  ><div class="opportunity-detail" *ngIf="selectedOpportunity as opportunity">
+    <span class="pill">{{ opportunityStatus(opportunity.status) }}</span>
+    <h2>{{ opportunity.name }}</h2>
+    <strong>{{ money(opportunity.amount) }}</strong>
+    <dl>
+      <dt>Expected close</dt>
+      <dd>
+        {{ opportunity.expectedCloseUtc ? (opportunity.expectedCloseUtc |
+        date:'mediumDate') : 'Not set' }}
+      </dd>
+      <dt>Pipeline</dt>
+      <dd>{{ selected?.name }}</dd>
+    </dl>
+    <footer>
+      <button (click)="selectedOpportunity=null">Close</button
+      ><button
+        *ngIf="opportunityStatus(opportunity.status)==='Open'"
+        class="danger"
+        (click)="closeSelected(false)"
+      >
+        Mark lost</button
+      ><button
+        *ngIf="opportunityStatus(opportunity.status)==='Open'"
+        class="primary"
+        (click)="closeSelected(true)"
+      >
+        Mark won</button
+      ><button
+        *ngIf="opportunityStatus(opportunity.status)!=='Open'"
+        class="primary"
+        (click)="reopenSelected()"
+      >
+        Reopen
+      </button>
+    </footer>
+  </div></qai-modal
+>

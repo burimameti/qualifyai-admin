@@ -237,3 +237,35 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+.campaign-activity {
+  margin: 20px 0;
+}
+.campaign-activity > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.campaign-activity h3 {
+  margin: 3px 0 0;
+}
+.activity-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.activity-list article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+}
+.activity-list small,
+.activity-list p {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted, #64748b);
+}

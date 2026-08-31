@@ -9,7 +9,10 @@
   <div>
     <span>OUTREACH PIPELINE</span>
     <h2>{{ rows.length }} campaigns · {{ running }} running</h2>
-    <p>Every recipient passes sender verification, suppression and human approval.</p>
+    <p>
+      Every recipient passes sender verification, suppression and human
+      approval.
+    </p>
   </div>
   <ol>
     <li class="done">Audience</li>
@@ -20,6 +23,7 @@
 </section>
 <p class="notice success" *ngIf="message">{{ message }}</p>
 <p class="notice error" *ngIf="error">{{ error }}</p>
+<p class="notice" *ngIf="loading">Loading campaign pipeline…</p>
 <div class="layout">
   <section class="campaigns">
     <header>
@@ -36,11 +40,17 @@
           ><span class="pill">{{ status(campaign.status) }}</span>
         </header>
         <p>
-          {{ campaign.goal }} ·
-          {{ campaign.startsAtUtc ? (campaign.startsAtUtc | date: 'short') : 'Not started' }}
+          {{ campaign.goal }} · {{ campaign.startsAtUtc ? (campaign.startsAtUtc
+          | date: 'short') : 'Not started' }}
         </p>
         <small>{{ campaign.senderName }} · {{ campaign.senderEmail }}</small>
+        <small
+          >{{ campaign.recipients || 0 }} recipients · {{ campaign.sent || 0 }}
+          sent · {{ campaign.replied || 0 }} replies · {{ campaign.failed || 0
+          }} failed</small
+        >
       </div>
+      <button (click)="inspect(campaign)">Activity</button>
       <button
         class="primary"
         *ngIf="campaign.status === 0 || campaign.status === 3"
@@ -51,7 +61,10 @@
     </article>
     <div class="empty" *ngIf="!rows.length">
       <h3>No campaign yet</h3>
-      <p>Import companies into a target list, then build the controlled outreach sequence.</p>
+      <p>
+        Import companies into a target list, then build the controlled outreach
+        sequence.
+      </p>
       <button class="primary" (click)="openBuilder()">Build campaign</button>
     </div>
   </section>
@@ -60,23 +73,80 @@
     <h3>Safe by design</h3>
     <ul>
       <li>
-        <b>1</b><span><strong>Verified sender</strong><small>Mailbox/domain ownership required</small></span>
+        <b>1</b
+        ><span
+          ><strong>Verified sender</strong
+          ><small>Mailbox/domain ownership required</small></span
+        >
       </li>
       <li>
-        <b>2</b><span><strong>Suppression check</strong><small>Opt-outs never receive outreach</small></span>
+        <b>2</b
+        ><span
+          ><strong>Suppression check</strong
+          ><small>Opt-outs never receive outreach</small></span
+        >
       </li>
       <li>
-        <b>3</b><span><strong>Human approval</strong><small>Review before each real send</small></span>
+        <b>3</b
+        ><span
+          ><strong>Human approval</strong
+          ><small>Review before each real send</small></span
+        >
       </li>
       <li>
-        <b>4</b><span><strong>Stop on reply</strong><small>Sequence pauses automatically</small></span>
+        <b>4</b
+        ><span
+          ><strong>Stop on reply</strong
+          ><small>Sequence pauses automatically</small></span
+        >
       </li>
     </ul>
   </aside>
 </div>
+<section class="panel campaign-activity" *ngIf="selectedCampaign">
+  <header>
+    <div>
+      <span class="eyebrow">Execution history</span>
+      <h3>{{selectedCampaign.name}}</h3>
+    </div>
+    <button (click)="selectedCampaign=null">Close</button>
+  </header>
+  <div class="metrics compact">
+    <article>
+      <span>Recipients</span><strong>{{selectedCampaign.recipients||0}}</strong>
+    </article>
+    <article>
+      <span>Queued</span><strong>{{selectedCampaign.queued||0}}</strong>
+    </article>
+    <article>
+      <span>Sent</span><strong>{{selectedCampaign.sent||0}}</strong>
+    </article>
+    <article>
+      <span>Replies</span><strong>{{selectedCampaign.replied||0}}</strong>
+    </article>
+  </div>
+  <div class="activity-list" *ngIf="activity.length; else noActivity">
+    <article *ngFor="let item of activity">
+      <span class="pill">{{item.status}}</span>
+      <div>
+        <b>{{item.title}}</b
+        ><small>{{item.type}} · {{item.atUtc|date:'medium'}}</small>
+        <p *ngIf="item.detail">{{item.detail}}</p>
+      </div>
+    </article>
+  </div>
+  <ng-template #noActivity
+    ><p class="empty">
+      No execution events yet. Start the campaign to queue its first
+      approval-controlled message.
+    </p></ng-template
+  >
+</section>
 <section class="panel table-wrap">
   <header>
-    <div><b>Approval queue</b><span>Messages prepared by running campaigns</span></div>
+    <div>
+      <b>Approval queue</b><span>Messages prepared by running campaigns</span>
+    </div>
   </header>
   <table>
     <thead>
@@ -90,17 +160,17 @@
     </thead>
     <tbody>
       <tr *ngFor="let item of messages">
-        <td>
-          <b>{{ item.prospect }}</b
-          ><small>{{ item.contactName }}</small>
-        </td>
+        <td><b>{{ item.prospect }}</b><small>{{ item.contactName }}</small></td>
         <td>{{ item.email }}</td>
         <td>{{ item.subject }}</td>
         <td>
           <span class="pill">{{ messageStatus(item.status) }}</span>
         </td>
         <td>
-          <button *ngIf="item.status === 0 && !item.approvalRequested" (click)="requestApproval(item)">
+          <button
+            *ngIf="item.status === 0 && !item.approvalRequested"
+            (click)="requestApproval(item)"
+          >
             Request approval</button
           ><button
             class="primary"
@@ -109,6 +179,13 @@
           >
             Approve & send
           </button>
+          <button
+            class="danger"
+            *ngIf="item.status === 4"
+            (click)="retryMessage(item)"
+          >
+            Retry failed send
+          </button>
         </td>
       </tr>
     </tbody>
@@ -116,26 +193,38 @@
   <p *ngIf="!messages.length">No messages await review.</p>
 </section>
 
-<qai-modal [open]="show" title="Build an outreach campaign" (close)="show = false"
+<qai-modal
+  [open]="show"
+  title="Build an outreach campaign"
+  (close)="show = false"
   ><nav class="steps">
     <button
       *ngFor="let label of ['Audience', 'Sender', 'Sequence', 'Review']; let i = index"
       [class.active]="builderStep === i + 1"
       [class.done]="builderStep > i + 1"
     >
-      <b>{{ i + 1 }}</b
-      >{{ label }}
+      <b>{{ i + 1 }}</b>{{ label }}
     </button>
   </nav>
   <form class="builder" (ngSubmit)="save()">
     <section *ngIf="builderStep === 1">
       <h3>Who should enter?</h3>
       <p>Choose the reviewed list created by Prospect Discovery.</p>
-      <label>Campaign name<input [(ngModel)]="form.name" name="name" required /></label
+      <label
+        >Campaign name<input
+          [(ngModel)]="form.name"
+          name="name"
+          required /></label
       ><label
-        >Target list<select [(ngModel)]="form.targetListId" name="list" required>
+        >Target list<select
+          [(ngModel)]="form.targetListId"
+          name="list"
+          required
+        >
           <option value="">Select target list</option>
-          <option *ngFor="let list of lists" [value]="list.id">{{ list.name }}</option>
+          <option *ngFor="let list of lists" [value]="list.id">
+            {{ list.name }}
+          </option>
         </select></label
       >
     </section>
@@ -143,22 +232,44 @@
       <h3>Who is sending?</h3>
       <p>The exact address must also be verified under Integrations.</p>
       <div class="form2">
-        <label>Sender name<input [(ngModel)]="form.senderName" name="sender" required /></label
+        <label
+          >Sender name<input
+            [(ngModel)]="form.senderName"
+            name="sender"
+            required /></label
         ><label
-          >Sender email<input type="email" [(ngModel)]="form.senderEmail" name="email" required
+          >Sender email<input
+            type="email"
+            [(ngModel)]="form.senderEmail"
+            name="email"
+            required
         /></label>
       </div>
     </section>
     <section *ngIf="builderStep === 3">
       <h3>What happens?</h3>
-      <p>Messages stop after a reply. Variables: company, contact, industry and country.</p>
+      <p>
+        Messages stop after a reply. Variables: company, contact, industry and
+        country.
+      </p>
       <article class="sequence" *ngFor="let step of form.steps; let i = index">
         <b>Step {{ i + 1 }}</b
         ><label
-          >Wait hours<input type="number" min="0" [(ngModel)]="step.delayHours" [name]="'delay' + i" /></label
-        ><label>Subject<input [(ngModel)]="step.subjectTemplate" [name]="'subject' + i" /></label
+          >Wait hours<input
+            type="number"
+            min="0"
+            [(ngModel)]="step.delayHours"
+            [name]="'delay' + i" /></label
         ><label
-          >Message<textarea rows="4" [(ngModel)]="step.bodyTemplate" [name]="'body' + i"></textarea>
+          >Subject<input
+            [(ngModel)]="step.subjectTemplate"
+            [name]="'subject' + i" /></label
+        ><label
+          >Message<textarea
+            rows="4"
+            [(ngModel)]="step.bodyTemplate"
+            [name]="'body' + i"
+          ></textarea>
         </label>
       </article>
     </section>
@@ -182,12 +293,16 @@
           <dd>{{ form.steps.length }} approval-controlled emails</dd>
         </div>
       </dl>
-      <p>Creating does not send email. Start queues recipients; each real message still requires approval.</p>
+      <p>
+        Creating does not send email. Start queues recipients; each real message
+        still requires approval.
+      </p>
     </section>
     <p class="error" *ngIf="error">{{ error }}</p>
     <footer>
       <button type="button" (click)="show = false">Cancel</button><span></span
-      ><button type="button" *ngIf="builderStep > 1" (click)="back()">Back</button
+      ><button type="button" *ngIf="builderStep > 1" (click)="back()">
+        Back</button
       ><button
         class="primary"
         type="button"
@@ -196,7 +311,12 @@
         (click)="next()"
       >
         Continue</button
-      ><button class="primary" type="submit" *ngIf="builderStep === 4" [disabled]="busy">
+      ><button
+        class="primary"
+        type="submit"
+        *ngIf="builderStep === 4"
+        [disabled]="busy"
+      >
         {{ busy ? 'Creating…' : 'Create draft' }}
       </button>
     </footer>
