@@ -67,6 +67,17 @@ export class DashboardPage implements OnInit {
     );
   }
 
+  get revenueConversion(): number {
+    const influenced = Number(this.summary.influencedRevenue || 0);
+    const won = Number(this.summary.wonRevenue || 0);
+
+    if (influenced <= 0 || won <= 0) {
+      return 0;
+    }
+
+    return Math.min(100, Math.round((won / influenced) * 100));
+  }
+
   refresh(): void {
     this.error = '';
     this.dashboard.summary<DashboardSummary>().subscribe({

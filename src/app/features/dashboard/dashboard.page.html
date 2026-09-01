@@ -1,161 +1,136 @@
-<qai-page-header
-  title="Revenue Command Center"
-  subtitle="Your live view of acquisition, pipeline, customer operations and automated work."
->
+<qai-page-header title="Revenue Command Center" subtitle="Your live view of acquisition, pipeline, customer operations and automated work.">
   <button type="button" class="quiet-action" (click)="refresh()">↻ Refresh data</button>
   <button type="button" class="primary" (click)="go('/automations')">Review automations</button>
 </qai-page-header>
 
 <div class="alert alert-error" *ngIf="error">
   <span class="alert-icon">!</span>
-  <div>
-    <strong>Dashboard could not be loaded</strong>
-    <p>{{ error }}</p>
-  </div>
+  <div><strong>Dashboard could not be loaded</strong><p>{{ error }}</p></div>
 </div>
 
 <section class="onboarding" *ngIf="loaded && !error && !hasData">
   <div class="onboarding-copy">
     <span class="eyebrow">WORKSPACE SETUP</span>
     <h2>Turn this empty workspace into a complete revenue story</h2>
-    <p>
-      Install a safe, persisted scenario for <strong>{{ tenantLabel }}</strong
-      >. It includes prospects, outreach, an interested reply, an opportunity, a booked demo, support tickets
-      and completed automations.
-    </p>
+    <p>Install a safe, persisted scenario for <strong>{{ tenantLabel }}</strong>. It includes prospects, outreach, an interested reply, an opportunity, a booked demo, support tickets and completed automations.</p>
     <div class="onboarding-actions">
-      <button type="button" class="primary large" (click)="installDemo()" [disabled]="installing">
-        {{ installing ? 'Installing scenario…' : 'Install complete demo scenario' }}</button
-      ><span>No real emails are sent.</span>
+      <button type="button" class="primary large" (click)="installDemo()" [disabled]="installing">{{ installing ? 'Installing scenario…' : 'Install complete demo scenario' }}</button>
+      <span>No real emails are sent.</span>
     </div>
   </div>
   <div class="journey-preview" aria-label="Demo journey preview">
-    <div>
-      <i>01</i><span>Discover<strong>5 prospects</strong></span>
-    </div>
-    <div>
-      <i>02</i><span>Engage<strong>Campaign + reply</strong></span>
-    </div>
-    <div>
-      <i>03</i><span>Convert<strong>Opportunity + demo</strong></span>
-    </div>
+    <div><i>01</i><span>Discover<strong>5 prospects</strong></span></div>
+    <div><i>02</i><span>Engage<strong>Campaign + reply</strong></span></div>
+    <div><i>03</i><span>Convert<strong>Opportunity + demo</strong></span></div>
   </div>
 </section>
 
 <ng-container *ngIf="hasData">
+  <section class="executive-band">
+    <div>
+      <span class="eyebrow">LIVE REVENUE OPERATIONS</span>
+      <h2>Sales operating picture</h2>
+      <p>One view of demand, active pipeline, customer conversations and delivery risk.</p>
+    </div>
+    <div class="executive-context">
+      <span><i class="status-dot"></i>Workspace live</span>
+      <span><b>{{ summary.contacts || 0 }}</b> CRM contacts</span>
+      <span><b>{{ summary.hotLeads || 0 }}</b> priority leads</span>
+    </div>
+  </section>
+
   <section class="metric-grid">
     <button type="button" class="metric-card blue" (click)="go('/crm/leads')">
-      <span class="metric-icon">◆</span><span>Qualified leads</span><strong>{{ summary.leads || 0 }}</strong
-      ><small>{{ summary.hotLeads || 0 }} require sales action</small>
+      <span class="metric-top"><span class="metric-icon">◆</span><span class="metric-label">Qualified leads</span></span>
+      <strong>{{ summary.leads || 0 }}</strong>
+      <small><b>{{ summary.hotLeads || 0 }}</b> require sales action <i>→</i></small>
     </button>
     <button type="button" class="metric-card violet" (click)="go('/pipeline')">
-      <span class="metric-icon">◈</span><span>Open pipeline</span
-      ><strong>{{ money(summary.pipeline) }}</strong
-      ><small>Persisted opportunity value</small>
+      <span class="metric-top"><span class="metric-icon">◈</span><span class="metric-label">Open pipeline</span></span>
+      <strong>{{ money(summary.pipeline) }}</strong>
+      <small>Qualified opportunity value <i>→</i></small>
     </button>
     <button type="button" class="metric-card green" (click)="go('/meetings')">
-      <span class="metric-icon">◷</span><span>Demos booked</span
-      ><strong>{{ summary.meetingsBooked || 0 }}</strong
-      ><small>Qualified sales meetings</small>
+      <span class="metric-top"><span class="metric-icon">◷</span><span class="metric-label">Demos booked</span></span>
+      <strong>{{ summary.meetingsBooked || 0 }}</strong>
+      <small>Qualified sales meetings <i>→</i></small>
     </button>
     <button type="button" class="metric-card amber" (click)="go('/inbox')">
-      <span class="metric-icon">▱</span><span>Open conversations</span
-      ><strong>{{ summary.openConversations || 0 }}</strong
-      ><small>Customer and prospect replies</small>
+      <span class="metric-top"><span class="metric-icon">▱</span><span class="metric-label">Open conversations</span></span>
+      <strong>{{ summary.openConversations || 0 }}</strong>
+      <small>Customer and prospect replies <i>→</i></small>
     </button>
     <button type="button" class="metric-card rose" (click)="go('/tickets')">
-      <span class="metric-icon">▣</span><span>Open tickets</span
-      ><strong>{{ summary.openTickets || 0 }}</strong
-      ><small>Issues requiring resolution</small>
+      <span class="metric-top"><span class="metric-icon">▣</span><span class="metric-label">Open tickets</span></span>
+      <strong>{{ summary.openTickets || 0 }}</strong>
+      <small>Issues requiring resolution <i>→</i></small>
     </button>
   </section>
 
   <section class="command-grid">
     <article class="revenue-card">
       <div class="card-heading">
-        <div>
-          <span class="eyebrow">COMMERCIAL IMPACT</span>
-          <h3>Revenue influenced</h3>
-        </div>
-        <span class="trend">Live</span>
+        <div><span class="eyebrow">COMMERCIAL IMPACT</span><h3>Revenue influenced</h3></div>
+        <span class="trend"><i></i> Live</span>
       </div>
-      <strong class="revenue-total">{{ money(summary.influencedRevenue) }}</strong>
-      <div class="revenue-split">
-        <div>
-          <span>Open pipeline</span><b>{{ money(summary.pipeline) }}</b>
+      <div class="revenue-body">
+        <span>Total attributed value</span>
+        <strong class="revenue-total">{{ money(summary.influencedRevenue) }}</strong>
+        <div class="revenue-split">
+          <div><span>Open pipeline</span><b>{{ money(summary.pipeline) }}</b><small>Active commercial value</small></div>
+          <div><span>Won revenue</span><b>{{ money(summary.wonRevenue) }}</b><small>Converted value</small></div>
         </div>
-        <div>
-          <span>Won revenue</span><b>{{ money(summary.wonRevenue) }}</b>
-        </div>
-      </div>
-      <div class="progress">
-        <i
-          [style.width.%]="
-            summary.wonRevenue && summary.influencedRevenue
-              ? (summary.wonRevenue / summary.influencedRevenue) * 100
-              : 4
-          "
-        ></i>
+        <div class="progress-copy"><span>Revenue conversion</span><b>{{ revenueConversion }}%</b></div>
+        <div class="progress"><i [style.width.%]="revenueConversion"></i></div>
       </div>
     </article>
+
     <article class="automation-card">
       <div class="card-heading">
-        <div>
-          <span class="eyebrow">OPERATING LEVERAGE</span>
-          <h3>Automation impact</h3>
-        </div>
-        <button type="button" (click)="go('/automations')">View all →</button>
+        <div><span class="eyebrow">OPERATING LEVERAGE</span><h3>Automation impact</h3></div>
+        <button type="button" (click)="go('/automations')">View all <span>→</span></button>
       </div>
       <div class="impact-grid">
-        <div>
-          <strong>{{ summary.estimatedHoursSaved || 0 }}h</strong><span>Time saved</span>
-        </div>
-        <div>
-          <strong>{{ summary.automationActions || 0 }}</strong
-          ><span>Actions executed</span>
-        </div>
-        <div>
-          <strong>{{ summary.completedRuns || 0 }}</strong
-          ><span>Completed runs</span>
-        </div>
+        <div><span class="impact-icon blue-impact">◷</span><span><small>Time saved</small><strong>{{ summary.estimatedHoursSaved || 0 }}h</strong></span></div>
+        <div><span class="impact-icon violet-impact">↯</span><span><small>Actions executed</small><strong>{{ summary.automationActions || 0 }}</strong></span></div>
+        <div><span class="impact-icon green-impact">✓</span><span><small>Completed runs</small><strong>{{ summary.completedRuns || 0 }}</strong></span></div>
       </div>
+      <div class="automation-note"><span><i></i> Automation health</span><strong>Operating normally</strong></div>
     </article>
   </section>
 
   <section class="detail-grid">
-    <article class="data-card">
+    <article class="data-card opportunity-card">
       <div class="card-heading">
-        <div>
-          <span class="eyebrow">SALES FOCUS</span>
-          <h3>Priority opportunities</h3>
-        </div>
-        <button type="button" (click)="go('/pipeline')">Open pipeline →</button>
+        <div><span class="eyebrow">SALES FOCUS</span><h3>Priority opportunities</h3></div>
+        <button type="button" (click)="go('/pipeline')">Open pipeline <span>→</span></button>
       </div>
-      <div class="opportunity" *ngFor="let item of summary.opportunities || []">
-        <span class="company-mark">{{ item.company.charAt(0) }}</span>
-        <div class="opportunity-main">
-          <strong>{{ item.company }}</strong
-          ><span>{{ item.country }} · {{ item.intent }}</span>
+      <div class="opportunity-table" *ngIf="summary.opportunities?.length">
+        <div class="opportunity-columns"><span>Account</span><span>Intent</span><span>Score</span><span>Value</span></div>
+        <div class="opportunity" *ngFor="let item of summary.opportunities || []">
+          <div class="account-cell">
+            <span class="company-mark">{{ item.company.charAt(0) }}</span>
+            <div class="opportunity-main"><strong>{{ item.company }}</strong><span>{{ item.country }}</span></div>
+          </div>
+          <span class="intent-cell">{{ item.intent }}</span>
+          <span class="score-chip">{{ item.score }}</span>
+          <b>{{ money(item.value) }}</b>
         </div>
-        <span class="score-chip">{{ item.score }}</span
-        ><b>{{ money(item.value) }}</b>
       </div>
       <p class="no-records" *ngIf="!summary.opportunities?.length">No open opportunities.</p>
     </article>
-    <article class="data-card">
+
+    <article class="data-card knowledge-card">
       <div class="card-heading">
-        <div>
-          <span class="eyebrow">CUSTOMER INTELLIGENCE</span>
-          <h3>Knowledge gaps</h3>
-        </div>
-        <button type="button" (click)="go('/knowledge/gaps')">Resolve →</button>
+        <div><span class="eyebrow">CUSTOMER INTELLIGENCE</span><h3>Knowledge gaps</h3></div>
+        <button type="button" (click)="go('/knowledge/gaps')">Resolve <span>→</span></button>
       </div>
-      <div class="knowledge-gap" *ngFor="let gap of summary.knowledgeGaps || []">
-        <div>
-          <strong>{{ gap.topic }}</strong
-          ><span>{{ gap.count }} unanswered questions</span>
+      <div class="knowledge-list">
+        <div class="knowledge-gap" *ngFor="let gap of summary.knowledgeGaps || []">
+          <span class="gap-mark">?</span>
+          <div class="gap-copy"><strong>{{ gap.topic }}</strong><span>{{ gap.count }} unanswered questions</span></div>
+          <em [class.high]="gap.impact === 'High'">{{ gap.impact }}</em>
         </div>
-        <em [class.high]="gap.impact === 'High'">{{ gap.impact }}</em>
       </div>
       <p class="no-records" *ngIf="!summary.knowledgeGaps?.length">No open knowledge gaps.</p>
     </article>
