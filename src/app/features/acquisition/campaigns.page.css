@@ -13,3 +13,35 @@
 .campaign-list{gap:0;padding:0 12px}.campaigns article,.campaigns article:nth-child(even){background:#fff;border:0;border-bottom:1px solid #e7edf5;border-radius:0;box-shadow:none;gap:14px;min-height:112px;padding:17px 4px}.campaigns article:last-child{border-bottom:0}.campaigns article:hover{background:#fbfdff;border-color:#d9e4f2;box-shadow:none;transform:none}.campaigns article.is-running{border-left:3px solid #22c55e;padding-left:12px}.campaign-icon{align-self:center}.campaign-main header strong{font-size:.84rem}.campaign-data{display:flex;gap:0;margin-top:12px}.campaign-data>span{background:transparent;border:0;border-right:1px solid #e2e8f0;border-radius:0;min-width:105px;padding:0 16px}.campaign-data>span:first-child{padding-left:0}.campaign-data>span:last-child{border-right:0}.campaign-data small{color:#64748b;font-size:.62rem;font-weight:800;letter-spacing:.045em}.campaign-data b{color:#334155;font-size:.7rem;margin-top:4px}.campaign-data em{color:#7c8ba1;font-size:.61rem;margin-top:2px}.activity-action,.campaign-action,.running-label{align-self:center}.activity-action{background:#fff!important;border-color:#cbd5e1!important;color:#475569!important;box-shadow:none!important}.activity-action:hover{background:#f8fafc!important;border-color:#94a3b8!important}.approval-panel>header{margin-bottom:0!important}.approval-panel .pill.status-queued{background:#fff3d6!important;border:1px solid #fed68a;color:#a85109!important}.approval-panel .queue-action{background:#fff7ed!important;border-color:#fed7aa!important;color:#c2410c!important}
 @media(max-width:1100px){.campaign-data{display:grid;grid-template-columns:repeat(2,1fr)}.campaign-data>span{border-bottom:1px solid #e2e8f0;border-right:0;padding:7px 10px}.campaign-data>span:first-child{padding-left:10px}}
 @media(max-width:720px){.campaign-data{grid-template-columns:1fr}.campaign-data>span{border-bottom:1px solid #e2e8f0}.campaign-data>span:last-child{border-bottom:0}}
+
+/* Operating Leverage surface pattern for campaign processes and human review. */
+.campaigns,.safety,.approval-panel{background:#f6f8fb}
+.campaigns>header,.safety>header,.approval-panel>header{background:linear-gradient(180deg,#f5f7fa,#eef2f6)!important;border-bottom:1px solid #dce3ec!important;color:#172033!important}
+.campaigns>header .eyebrow,.safety>header .eyebrow,.approval-panel>header .eyebrow{color:#64748b!important}
+.approval-panel>header span:not(.eyebrow){color:#64748b!important}
+.approval-panel>header>strong{background:#fff3d6!important;border:1px solid #fed68a!important;color:#a85109!important}
+
+.campaign-list{display:grid;gap:9px;padding:13px;background:#f6f8fb}
+.campaigns article,.campaigns article:nth-child(even){min-height:108px;padding:13px;border:1px solid #dfe5ed;border-radius:10px;background:linear-gradient(100deg,#fff,#f4f6f9);box-shadow:none}
+.campaigns article:last-child{border-bottom:1px solid #dfe5ed}
+.campaigns article:hover{border-color:#becde3;background:linear-gradient(100deg,#fff,#eef4fc);box-shadow:0 5px 14px #2563eb0d}
+.campaigns article.is-running{border-left:3px solid #22a45a;padding-left:11px}
+.campaign-data{gap:8px}
+.campaign-data>span{padding:7px 9px!important;border:1px solid #e3e8ef!important;border-radius:8px!important;background:#ffffffc9!important}
+
+.safety{padding-bottom:0}
+.safety ul{display:grid;gap:9px;padding:13px}
+.safety li{margin:0}
+.safety li button{min-height:61px;border:1px solid #e0e6ed;background:linear-gradient(100deg,#fff,#f4f6f9)}
+
+.approval-panel.panel.table-wrap{padding:0!important;overflow:hidden}
+.approval-table-shell{margin:14px;overflow:auto;border:1px solid #dce3ec;border-radius:10px;background:#fff}
+.approval-panel table{min-width:860px;width:100%}
+.approval-panel th{background:#e8edf4!important;border-top:0!important;border-bottom:1px solid #d5deea!important}
+.approval-panel td{background:#fff!important}
+.approval-panel tbody tr:nth-child(even) td{background:#f7f9fc!important}
+.approval-panel tbody tr:hover td{background:#eef4fc!important}
+.approval-panel tbody tr.awaiting td:first-child{box-shadow:inset 3px 0 #f59e0b}
+.approval-panel .queue-empty{margin:14px;border:1px dashed #bfd0e6;border-radius:10px;background:linear-gradient(100deg,#fff,#f2f6fb)}
+
+@media(max-width:1100px){.campaign-data{gap:7px}.campaign-data>span{border:1px solid #e3e8ef!important}}

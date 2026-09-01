@@ -126,48 +126,32 @@
     </div>
     <strong>{{ pendingMessages }} pending</strong>
   </header>
-  <table>
-    <thead>
-      <tr>
-        <th>Company</th>
-        <th>Recipient</th>
-        <th>Subject</th>
-        <th>Status</th>
-        <th>Decision</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of messages" [class.awaiting]="item.status === 0">
-        <td><b>{{ item.prospect }}</b><small>{{ item.contactName }}</small></td>
-        <td>{{ item.email }}</td>
-        <td>{{ item.subject }}</td>
-        <td>
-          <span class="pill" [ngClass]="'status-' + messageStatus(item.status).toLowerCase()">{{ messageStatus(item.status) }}</span>
-        </td>
-        <td>
-          <button class="queue-action"
-            *ngIf="item.status === 0 && !item.approvalRequested"
-            (click)="requestApproval(item)"
-          >
-            Request approval</button
-          ><button
-            class="primary"
-            *ngIf="item.status === 0 && item.approvalRequested"
-            (click)="approveAndSend(item)"
-          >
-            Approve & send
-          </button>
-          <button
-            class="danger"
-            *ngIf="item.status === 4"
-            (click)="retryMessage(item)"
-          >
-            Retry failed send
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="approval-table-shell" *ngIf="messages.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Recipient</th>
+          <th>Subject</th>
+          <th>Status</th>
+          <th>Decision</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of messages" [class.awaiting]="item.status === 0">
+          <td><b>{{ item.prospect }}</b><small>{{ item.contactName }}</small></td>
+          <td>{{ item.email }}</td>
+          <td>{{ item.subject }}</td>
+          <td><span class="pill" [ngClass]="'status-' + messageStatus(item.status).toLowerCase()">{{ messageStatus(item.status) }}</span></td>
+          <td>
+            <button class="queue-action" *ngIf="item.status === 0 && !item.approvalRequested" (click)="requestApproval(item)">Request approval</button>
+            <button class="primary" *ngIf="item.status === 0 && item.approvalRequested" (click)="approveAndSend(item)">Approve & send</button>
+            <button class="danger" *ngIf="item.status === 4" (click)="retryMessage(item)">Retry failed send</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <div class="queue-empty" *ngIf="!messages.length"><b>✓</b><span>No messages await review.</span></div>
 </section>
 

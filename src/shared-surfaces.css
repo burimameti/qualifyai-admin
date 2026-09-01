@@ -69,3 +69,41 @@
 
 /* Legacy list pages use the same divider-based grid until their markup adopts directory-card. */
 .page .panel.table-wrap{border-radius:11px;overflow:auto;padding:0}.page .panel.table-wrap>header{margin:0!important;padding:17px 20px!important}.page .panel.table-wrap>table{margin:0!important;min-width:760px;width:100%!important}.page .panel.table-wrap>.data-state{margin:16px}.page table td>button+button{margin-left:7px}
+
+/* Operating Leverage is the canonical application surface: framed card, full header, inset content. */
+:root{--ops-canvas:#f6f8fb;--ops-row:#fff;--ops-row-end:#f4f6f9;--ops-border:#dce3ec;--ops-header-start:#f5f7fa;--ops-header-end:#eef2f6}
+.page :is(.directory-card,.panel,.data-card,.campaigns,.safety,.contacts-card){background:var(--ops-canvas)}
+.page :is(.directory-card,.panel,.data-card,.campaigns,.safety,.contacts-card)>header{background:linear-gradient(180deg,var(--ops-header-start),var(--ops-header-end))!important;border-bottom:1px solid #dce3ec!important}
+
+/* Directory screens: controls and grid sit inside the card instead of becoming a white sheet. */
+.page .directory-card{border-radius:14px;box-shadow:0 6px 18px #17203309}
+.page .directory-card>.directory-toolbar{margin:14px 14px 10px;min-height:54px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:7px 10px}
+.page .directory-card>.table-wrap{margin:0 14px 14px;overflow:auto;border:1px solid var(--ops-border);border-radius:10px;background:#fff}
+.page .directory-card>.data-state{margin:14px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end))}
+.page .directory-card>.directory-empty{margin:14px;border:1px dashed #bfd0e6;border-radius:10px;background:linear-gradient(100deg,#fff,#f2f6fb)}
+.page .directory-card table thead th{background:#e8edf4!important;border-top:0!important;border-bottom-color:#d5deea!important}
+.page .directory-card table tbody td{background:#fff!important}
+.page .directory-card table tbody tr:nth-child(even) td{background:#f7f9fc!important}
+.page .directory-card table tbody tr:hover td{background:#eef4fc!important}
+
+/* Legacy grids receive the same inset frame without requiring per-page markup changes. */
+.page .panel.table-wrap{padding:0 14px 14px!important;background:var(--ops-canvas);overflow:auto}
+.page .panel.table-wrap>header{margin:0 -14px 14px!important}
+.page .panel.table-wrap>table{margin:0!important;overflow:hidden;border:1px solid var(--ops-border);border-radius:10px;background:#fff;border-collapse:separate!important;border-spacing:0!important}
+.page .panel.table-wrap:not(:has(>header)){padding-top:14px!important}
+.page .panel.table-wrap>table thead th{background:#e8edf4!important;border-top:0!important}
+.page .panel.table-wrap>table tbody td{background:#fff}
+.page .panel.table-wrap>table tbody tr:nth-child(even) td{background:#f7f9fc}
+
+/* Generic operational cards use inset rows just like Automation impact. */
+.page :is(.panel,.data-card)>.gap{margin:0 0 9px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:12px 13px}
+.page :is(.panel,.data-card)>.gap:last-child{margin-bottom:0}
+.page .impact{gap:9px}
+.page .impact>div{border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:14px}
+.page .settings-grid>.panel,.page .grid2>.panel{box-shadow:0 6px 18px #17203309}
+
+@media(max-width:760px){
+  .page .directory-card>.directory-toolbar,.page .directory-card>.table-wrap,.page .directory-card>.data-state,.page .directory-card>.directory-empty{margin-left:10px;margin-right:10px}
+  .page .panel.table-wrap{padding:0 10px 10px!important}
+  .page .panel.table-wrap>header{margin:0 -10px 10px!important}
+}
