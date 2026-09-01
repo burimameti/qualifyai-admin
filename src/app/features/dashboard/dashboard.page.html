@@ -41,29 +41,24 @@
 
   <section class="metric-grid">
     <button type="button" class="metric-card blue" (click)="go('/crm/leads')">
-      <span class="metric-top"><span class="metric-icon">◆</span><span class="metric-label">Qualified leads</span></span>
-      <strong>{{ summary.leads || 0 }}</strong>
-      <small><b>{{ summary.hotLeads || 0 }}</b> require sales action <i>→</i></small>
+      <span class="metric-icon">◆</span>
+      <span class="metric-copy"><span>Qualified leads</span><strong>{{ summary.leads || 0 }}</strong><small>{{ summary.hotLeads || 0 }} require sales action</small></span>
     </button>
     <button type="button" class="metric-card violet" (click)="go('/pipeline')">
-      <span class="metric-top"><span class="metric-icon">◈</span><span class="metric-label">Open pipeline</span></span>
-      <strong>{{ money(summary.pipeline) }}</strong>
-      <small>Qualified opportunity value <i>→</i></small>
+      <span class="metric-icon">◈</span>
+      <span class="metric-copy"><span>Open pipeline</span><strong>{{ money(summary.pipeline) }}</strong><small>Qualified opportunity value</small></span>
     </button>
     <button type="button" class="metric-card green" (click)="go('/meetings')">
-      <span class="metric-top"><span class="metric-icon">◷</span><span class="metric-label">Demos booked</span></span>
-      <strong>{{ summary.meetingsBooked || 0 }}</strong>
-      <small>Qualified sales meetings <i>→</i></small>
+      <span class="metric-icon">◷</span>
+      <span class="metric-copy"><span>Demos booked</span><strong>{{ summary.meetingsBooked || 0 }}</strong><small>Qualified sales meetings</small></span>
     </button>
     <button type="button" class="metric-card amber" (click)="go('/inbox')">
-      <span class="metric-top"><span class="metric-icon">▱</span><span class="metric-label">Open conversations</span></span>
-      <strong>{{ summary.openConversations || 0 }}</strong>
-      <small>Customer and prospect replies <i>→</i></small>
+      <span class="metric-icon">▱</span>
+      <span class="metric-copy"><span>Open conversations</span><strong>{{ summary.openConversations || 0 }}</strong><small>Customer and prospect replies</small></span>
     </button>
     <button type="button" class="metric-card rose" (click)="go('/tickets')">
-      <span class="metric-top"><span class="metric-icon">▣</span><span class="metric-label">Open tickets</span></span>
-      <strong>{{ summary.openTickets || 0 }}</strong>
-      <small>Issues requiring resolution <i>→</i></small>
+      <span class="metric-icon">▣</span>
+      <span class="metric-copy"><span>Open tickets</span><strong>{{ summary.openTickets || 0 }}</strong><small>Issues requiring resolution</small></span>
     </button>
   </section>
 
@@ -74,15 +69,14 @@
         <span class="trend"><i></i> Live</span>
       </div>
       <div class="revenue-body">
-        <span>Total attributed value</span>
-        <strong class="revenue-total">{{ money(summary.influencedRevenue) }}</strong>
-        <div class="revenue-split">
-          <div><span>Open pipeline</span><b>{{ money(summary.pipeline) }}</b><small>Active commercial value</small></div>
-          <div><span>Won revenue</span><b>{{ money(summary.wonRevenue) }}</b><small>Converted value</small></div>
+        <div class="revenue-highlight">
+          <span class="impact-icon blue-impact">↗</span>
+          <span><small>Total attributed value</small><strong>{{ money(summary.influencedRevenue) }}</strong></span>
         </div>
-        <div class="progress-copy"><span>Revenue conversion</span><b>{{ revenueConversion }}%</b></div>
-        <div class="progress"><i [style.width.%]="revenueConversion"></i></div>
+        <div class="revenue-row"><span><small>Open pipeline</small><em>Active commercial value</em></span><strong>{{ money(summary.pipeline) }}</strong></div>
+        <div class="revenue-row"><span><small>Won revenue</small><em>Converted value</em></span><strong>{{ money(summary.wonRevenue) }}</strong></div>
       </div>
+      <div class="revenue-note"><span>Revenue conversion</span><strong>{{ revenueConversion }}%</strong><div class="progress"><i [style.width.%]="revenueConversion"></i></div></div>
     </article>
 
     <article class="automation-card">
