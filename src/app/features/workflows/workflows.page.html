@@ -15,15 +15,12 @@
 </qai-page-header>
 
 <ng-template #workflowList>
-  <div class="workflow-toolbar"><div><b>{{ flows.length }}</b><span>Total workflows</span></div><div><b>{{ activeWorkflowCount }}</b><span>Active</span></div><label>⌕<input [(ngModel)]="workflowQuery" placeholder="Search workflows" /></label></div>
-  <section class="workflow-list" *ngIf="visibleFlows.length; else noWorkflows">
-    <article *ngFor="let flow of visibleFlows" (click)="openFlow(flow)">
-      <header><i>⌁</i><span class="pill" [class.success]="flow.active">{{ flow.active === false ? 'Draft' : 'Active' }}</span></header>
-      <h3>{{ flow.name }}</h3><p>{{ flowSummary(flow) }}</p>
-      <footer><span>{{ flow.createdAtUtc ? (flow.createdAtUtc | date:'mediumDate') : 'Ready to configure' }}</span><button type="button" (click)="$event.stopPropagation(); openFlow(flow)">Open designer →</button></footer>
-    </article>
+  <section class="directory-card workflow-workspace">
+    <header><div><span class="eyebrow">Process automation</span><h2>Workflow directory</h2><p>Create, review and launch every automated business process.</p></div><div class="directory-summary"><span><b>{{flows.length}}</b>Total</span><span><b>{{activeWorkflowCount}}</b>Active</span><span><b>{{draftWorkflowCount}}</b>Draft</span></div></header>
+    <div class="directory-toolbar"><label><span>⌕</span><input [(ngModel)]="workflowQuery" placeholder="Search workflows" /></label><select [(ngModel)]="workflowStatus"><option value="">All statuses</option><option value="active">Active</option><option value="draft">Draft</option></select><strong>{{visibleFlows.length}} shown</strong></div>
+    <div class="table-wrap" *ngIf="visibleFlows.length; else noWorkflows"><table><thead><tr><th>Workflow</th><th>Business outcome</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody><tr *ngFor="let flow of visibleFlows" (click)="openFlow(flow)"><td><div class="directory-identity"><i>⌁</i><span><b>{{flow.name}}</b><small>Configurable rules, actions and approvals</small></span></div></td><td>{{flowSummary(flow)}}</td><td><span class="pill" [class.success]="flow.active !== false" [class.status-pending]="flow.active === false">{{flow.active === false ? 'Draft' : 'Active'}}</span></td><td>{{flow.createdAtUtc ? (flow.createdAtUtc | date:'mediumDate') : 'Ready to configure'}}</td><td><div class="directory-actions"><button class="primary" type="button" (click)="$event.stopPropagation(); openFlow(flow)">Open designer →</button></div></td></tr></tbody></table></div>
+    <ng-template #noWorkflows><div class="directory-empty"><i>⌁</i><strong>No workflows found</strong><span>Adjust the filter or start from a proven process.</span><div><button (click)="templateOpen = true">Browse templates</button><button class="primary" (click)="newOpen = true">Create workflow</button></div></div></ng-template>
   </section>
-  <ng-template #noWorkflows><div class="workflow-empty"><i>⌁</i><h2>No workflows yet</h2><p>Start from a proven business process or create one from scratch.</p><button (click)="templateOpen = true">Browse templates</button><button class="primary" (click)="newOpen = true">Create workflow</button></div></ng-template>
 </ng-template>
 
 <ng-container *ngIf="view === 'designer'; else workflowList">

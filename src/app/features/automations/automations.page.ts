@@ -7,6 +7,7 @@ import { AutomationsService } from "./automations.service";
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
+  styleUrl: "./automations.page.css",
   template: `<qai-page-header
       title="Automations"
       subtitle="Turn customer and sales signals into automated revenue actions."
@@ -15,42 +16,32 @@ import { AutomationsService } from "./automations.service";
         + New automation
       </button></qai-page-header
     >
-    <div class="automation-hero">
-      <div>
-        <span>REVENUE AUTOMATION</span><b>{{ rows.length }} active rules</b
-        ><small
-          >Hot leads can create pipeline, tasks and attribution
-          automatically.</small
-        >
-      </div>
-      <div>
-        <b>{{ lastRun }}</b
-        ><span>Last execution</span>
-      </div>
-    </div>
-    <section class="automation-list">
-      <article *ngFor="let a of rows">
-        <div class="auto-icon">⚡</div>
-        <div class="auto-main">
-          <header>
-            <b>{{ a.name }}</b
-            ><span class="pill success" *ngIf="a.active">Active</span>
-          </header>
-          <p>
-            <strong>WHEN</strong> {{ a.trigger }} <strong>THEN</strong>
-            {{ actions(a) }}
-          </p>
-          <small>{{ a.conditionsJson }}</small>
+    <section class="directory-card automation-workspace">
+      <header>
+        <div><span class="eyebrow">Revenue automation</span><h2>Automation rules</h2><p>Review triggers, business actions and execution controls in one workspace.</p></div>
+        <div class="directory-summary">
+          <span><b>{{ rows.length }}</b>Total</span>
+          <span><b>{{ activeCount }}</b>Active</span>
+          <span><b>{{ failedCount }}</b>Failed runs</span>
         </div>
-        <label class="toggle"
-          ><input
-            type="checkbox"
-            [(ngModel)]="a.active"
-            (change)="toggle(a)" /><span></span></label
-        ><button (click)="run(a)">Run</button
-        ><button (click)="publish(a)">RabbitMQ event</button
-        ><button (click)="open(a)">Edit</button>
-      </article>
+      </header>
+      <div class="directory-toolbar">
+        <label><span>⌕</span><input [(ngModel)]="query" placeholder="Search automation or trigger" /></label>
+        <select [(ngModel)]="statusFilter"><option value="">All statuses</option><option value="active">Active</option><option value="paused">Paused</option></select>
+        <strong>{{ visibleRows.length }} shown · Last run {{ lastRun }}</strong>
+      </div>
+      <div class="table-wrap" *ngIf="visibleRows.length; else noAutomations">
+        <table><thead><tr><th>Automation</th><th>Trigger</th><th>Business actions</th><th>Status</th><th>Enabled</th><th>Actions</th></tr></thead>
+        <tbody><tr *ngFor="let a of visibleRows">
+          <td><div class="directory-identity"><i>⚡</i><span><b>{{a.name}}</b><small>{{conditionSummary(a)}}</small></span></div></td>
+          <td><span class="event-name">{{a.trigger}}</span></td>
+          <td><span class="action-flow">{{actions(a)}}</span></td>
+          <td><span class="pill" [class.success]="a.active" [class.status-pending]="!a.active">{{a.active ? 'Active' : 'Paused'}}</span></td>
+          <td><label class="toggle" [attr.aria-label]="'Enable ' + a.name"><input type="checkbox" [(ngModel)]="a.active" (change)="toggle(a)" /><span></span></label></td>
+          <td><div class="directory-actions"><button (click)="run(a)">▶ Run</button><button (click)="publish(a)">Publish event</button><button class="primary" (click)="open(a)">Edit</button></div></td>
+        </tr></tbody></table>
+      </div>
+      <ng-template #noAutomations><div class="directory-empty"><i>⚡</i><strong>No automation rules found</strong><span>Adjust the filter or create a new automation.</span><button class="primary" (click)="open()">Create automation</button></div></ng-template>
     </section>
     <section class="panel table-wrap">
       <header><div><b>Execution history</b><span>Real action results and failures</span></div><button (click)="load()">↻ Refresh</button></header>
@@ -102,6 +93,8 @@ export class AutomationsPage implements OnInit {
   show = false;
   lastRun = "Never";
   installing = false;
+  query = "";
+  statusFilter = "";
   form: any = {
     name: "Hot lead → pipeline",
     trigger: "lead.qualified",
@@ -113,6 +106,15 @@ export class AutomationsPage implements OnInit {
   constructor(private data: AutomationsService) {}
   ngOnInit() {
     this.load();
+  }
+  get activeCount() { return this.rows.filter(x => x.active).length; }
+  get failedCount() { return this.runs.filter(x => x.status === "failed").length; }
+  get visibleRows() {
+    const term = this.query.trim().toLowerCase();
+    return this.rows.filter(x => {
+      const statusMatches = !this.statusFilter || (this.statusFilter === "active" ? x.active : !x.active);
+      return statusMatches && (!term || `${x.name} ${x.trigger} ${this.actions(x)}`.toLowerCase().includes(term));
+    });
   }
   load() {
     this.data.list().subscribe((r) => (this.rows = r));
@@ -141,6 +143,14 @@ export class AutomationsPage implements OnInit {
         .join(" → ");
     } catch {
       return a.actionsJson;
+    }
+  }
+  conditionSummary(a: AutomationRule) {
+    try {
+      const conditions = JSON.parse(a.conditionsJson || "[]");
+      return conditions.length ? `${conditions.length} execution condition${conditions.length === 1 ? "" : "s"}` : "Runs whenever the event is received";
+    } catch {
+      return "Custom execution conditions";
     }
   }
   save() {

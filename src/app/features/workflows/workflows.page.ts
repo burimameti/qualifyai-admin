@@ -45,6 +45,7 @@ export class WorkflowsPage implements OnInit {
   flows: WorkflowSummary[] = [];
   view: 'list' | 'designer' = 'list';
   workflowQuery = '';
+  workflowStatus = '';
   activeId = '';
   nodes: Step[] = [];
   edges: Edge[] = [];
@@ -120,9 +121,15 @@ export class WorkflowsPage implements OnInit {
   get activeWorkflowCount(): number {
     return this.flows.filter((x) => x.active !== false).length;
   }
+  get draftWorkflowCount(): number {
+    return this.flows.length - this.activeWorkflowCount;
+  }
   get visibleFlows(): WorkflowSummary[] {
     const term = this.workflowQuery.trim().toLowerCase();
-    return this.flows.filter((x) => !term || x.name.toLowerCase().includes(term));
+    return this.flows.filter((x) => {
+      const statusMatches = !this.workflowStatus || (this.workflowStatus === 'active' ? x.active !== false : x.active === false);
+      return statusMatches && (!term || `${x.name} ${this.flowSummary(x)}`.toLowerCase().includes(term));
+    });
   }
   get readiness(): number {
     const checks = [
