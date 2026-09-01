@@ -77,29 +77,29 @@
 
 /* Directory screens: controls and grid sit inside the card instead of becoming a white sheet. */
 .page .directory-card{border-radius:14px;box-shadow:0 6px 18px #17203309}
-.page .directory-card>.directory-toolbar{margin:14px 14px 10px;min-height:54px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:7px 10px}
-.page .directory-card>.table-wrap{margin:0 14px 14px;overflow:auto;border:1px solid var(--ops-border);border-radius:10px;background:#fff}
-.page .directory-card>.data-state{margin:14px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end))}
-.page .directory-card>.directory-empty{margin:14px;border:1px dashed #bfd0e6;border-radius:10px;background:linear-gradient(100deg,#fff,#f2f6fb)}
+.page .directory-card>.directory-toolbar{margin:14px 14px 10px;min-height:54px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#f8fafc,#edf1f5);padding:7px 10px}
+.page .directory-card>.table-wrap{margin:0 14px 14px;overflow:auto;border:1px solid var(--ops-border);border-radius:10px;background:#f3f6f9}
+.page .directory-card>.data-state{margin:14px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#f8fafc,#edf1f5)}
+.page .directory-card>.directory-empty{margin:14px;border:1px dashed #bfd0e6;border-radius:10px;background:linear-gradient(100deg,#f7f9fc,#edf3f9)}
 .page .directory-card table thead th{background:#e8edf4!important;border-top:0!important;border-bottom-color:#d5deea!important}
-.page .directory-card table tbody td{background:#fff!important}
-.page .directory-card table tbody tr:nth-child(even) td{background:#f7f9fc!important}
+.page .directory-card table tbody td{background:#f7f9fb!important}
+.page .directory-card table tbody tr:nth-child(even) td{background:#eef2f6!important}
 .page .directory-card table tbody tr:hover td{background:#eef4fc!important}
 
 /* Legacy grids receive the same inset frame without requiring per-page markup changes. */
 .page .panel.table-wrap{padding:0 14px 14px!important;background:var(--ops-canvas);overflow:auto}
 .page .panel.table-wrap>header{margin:0 -14px 14px!important}
-.page .panel.table-wrap>table{margin:0!important;overflow:hidden;border:1px solid var(--ops-border);border-radius:10px;background:#fff;border-collapse:separate!important;border-spacing:0!important}
+.page .panel.table-wrap>table{margin:0!important;overflow:hidden;border:1px solid var(--ops-border);border-radius:10px;background:#f3f6f9;border-collapse:separate!important;border-spacing:0!important}
 .page .panel.table-wrap:not(:has(>header)){padding-top:14px!important}
 .page .panel.table-wrap>table thead th{background:#e8edf4!important;border-top:0!important}
-.page .panel.table-wrap>table tbody td{background:#fff}
-.page .panel.table-wrap>table tbody tr:nth-child(even) td{background:#f7f9fc}
+.page .panel.table-wrap>table tbody td{background:#f7f9fb}
+.page .panel.table-wrap>table tbody tr:nth-child(even) td{background:#eef2f6}
 
 /* Generic operational cards use inset rows just like Automation impact. */
-.page :is(.panel,.data-card)>.gap{margin:0 0 9px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:12px 13px}
+.page :is(.panel,.data-card)>.gap{margin:0 0 9px;border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#f8fafc,#edf1f5);padding:12px 13px}
 .page :is(.panel,.data-card)>.gap:last-child{margin-bottom:0}
 .page .impact{gap:9px}
-.page .impact>div{border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#fff,var(--ops-row-end));padding:14px}
+.page .impact>div{border:1px solid var(--ops-border);border-radius:10px;background:linear-gradient(100deg,#f8fafc,#edf1f5);padding:14px}
 .page .settings-grid>.panel,.page .grid2>.panel{box-shadow:0 6px 18px #17203309}
 
 @media(max-width:760px){
