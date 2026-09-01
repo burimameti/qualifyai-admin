@@ -41,24 +41,29 @@
 
   <section class="metric-grid">
     <button type="button" class="metric-card blue" (click)="go('/crm/leads')">
-      <span class="metric-icon">◆</span>
-      <span class="metric-copy"><span>Qualified leads</span><strong>{{ summary.leads || 0 }}</strong><small>{{ summary.hotLeads || 0 }} require sales action</small></span>
+      <span class="metric-top"><span class="metric-icon">◆</span><span class="metric-label">Qualified leads</span></span>
+      <strong>{{ summary.leads || 0 }}</strong>
+      <small><b>{{ summary.hotLeads || 0 }}</b> require sales action <i>→</i></small>
     </button>
     <button type="button" class="metric-card violet" (click)="go('/pipeline')">
-      <span class="metric-icon">◈</span>
-      <span class="metric-copy"><span>Open pipeline</span><strong>{{ money(summary.pipeline) }}</strong><small>Qualified opportunity value</small></span>
+      <span class="metric-top"><span class="metric-icon">◈</span><span class="metric-label">Open pipeline</span></span>
+      <strong>{{ money(summary.pipeline) }}</strong>
+      <small>Qualified opportunity value <i>→</i></small>
     </button>
     <button type="button" class="metric-card green" (click)="go('/meetings')">
-      <span class="metric-icon">◷</span>
-      <span class="metric-copy"><span>Demos booked</span><strong>{{ summary.meetingsBooked || 0 }}</strong><small>Qualified sales meetings</small></span>
+      <span class="metric-top"><span class="metric-icon">◷</span><span class="metric-label">Demos booked</span></span>
+      <strong>{{ summary.meetingsBooked || 0 }}</strong>
+      <small>Qualified sales meetings <i>→</i></small>
     </button>
     <button type="button" class="metric-card amber" (click)="go('/inbox')">
-      <span class="metric-icon">▱</span>
-      <span class="metric-copy"><span>Open conversations</span><strong>{{ summary.openConversations || 0 }}</strong><small>Customer and prospect replies</small></span>
+      <span class="metric-top"><span class="metric-icon">▱</span><span class="metric-label">Open conversations</span></span>
+      <strong>{{ summary.openConversations || 0 }}</strong>
+      <small>Customer and prospect replies <i>→</i></small>
     </button>
     <button type="button" class="metric-card rose" (click)="go('/tickets')">
-      <span class="metric-icon">▣</span>
-      <span class="metric-copy"><span>Open tickets</span><strong>{{ summary.openTickets || 0 }}</strong><small>Issues requiring resolution</small></span>
+      <span class="metric-top"><span class="metric-icon">▣</span><span class="metric-label">Open tickets</span></span>
+      <strong>{{ summary.openTickets || 0 }}</strong>
+      <small>Issues requiring resolution <i>→</i></small>
     </button>
   </section>
 
