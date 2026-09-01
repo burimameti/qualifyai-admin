@@ -1,0 +1,156 @@
+<div class="landing-shell">
+  <header class="landing-nav">
+    <a class="brand" routerLink="/" aria-label="QualifyAI home">
+      <i class="brand-mark"><span></span><span></span><span></span></i>
+      <span><b>Qualify</b><strong>AI</strong></span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#platform">Platform</a>
+      <a href="#operations">Operations</a>
+      <a href="#security">Security</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="text-link" [routerLink]="auth.loggedIn() ? '/dashboard' : '/login'">{{ auth.loggedIn() ? 'Open workspace' : 'Sign in' }}</a>
+      <a class="nav-cta" href="#contact">Book a product demo <span>→</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="section-label"><i></i> REVENUE & CUSTOMER OPERATIONS</span>
+        <h1>Turn every customer signal into <em>measurable growth.</em></h1>
+        <p>QualifyAI connects prospect discovery, approved outreach, sales pipeline, customer conversations and automated work in one operating system.</p>
+        <div class="hero-actions">
+          <a class="primary-cta" href="#contact">See it for your business <span>→</span></a>
+          <a class="secondary-cta" [routerLink]="auth.loggedIn() ? '/dashboard' : '/login'">{{ auth.loggedIn() ? 'Open command center' : 'Explore the workspace' }}</a>
+        </div>
+        <div class="hero-proof">
+          <span><i>✓</i> Human approval controls</span>
+          <span><i>✓</i> Tenant-safe by design</span>
+          <span><i>✓</i> Full operational audit trail</span>
+        </div>
+      </div>
+
+      <div class="product-stage" aria-label="QualifyAI revenue command center preview">
+        <div class="stage-glow"></div>
+        <div class="product-window">
+          <header>
+            <div class="window-brand"><i class="mini-mark"></i><b>QualifyAI</b></div>
+            <div class="window-search">⌕&nbsp;&nbsp; Search operations</div>
+            <span class="window-user">BA</span>
+          </header>
+          <div class="window-layout">
+            <aside>
+              <i class="active">⌂</i><i>◇</i><i>▱</i><i>↯</i><i>▦</i>
+            </aside>
+            <section class="window-content">
+              <div class="preview-heading"><div><small>REVENUE COMMAND CENTER</small><b>Sales operating picture</b></div><span><i></i> Live</span></div>
+              <div class="preview-metrics">
+                <article class="blue"><span>Qualified leads</span><b>127</b><small>38 require action</small></article>
+                <article class="violet"><span>Open pipeline</span><b>€184K</b><small>12 opportunities</small></article>
+                <article class="green"><span>Demos booked</span><b>24</b><small>This month</small></article>
+              </div>
+              <div class="preview-grid">
+                <article class="revenue-preview">
+                  <header><span>COMMERCIAL IMPACT</span><b>Revenue influenced</b></header>
+                  <strong>€246,800</strong>
+                  <div><span>Open pipeline <b>€184,250</b></span><span>Won revenue <b>€62,550</b></span></div>
+                  <i><u></u></i>
+                </article>
+                <article class="focus-preview">
+                  <header><span>SALES FOCUS</span><b>Priority opportunities</b></header>
+                  <div><i>NC</i><span><b>NordCargo</b><small>Expansion intent</small></span><strong>92</strong></div>
+                  <div><i>AL</i><span><b>Atlas Logistics</b><small>Active evaluation</small></span><strong>87</strong></div>
+                  <div><i>VF</i><span><b>Vector Freight</b><small>Demo requested</small></span><strong>84</strong></div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="floating-card signal-card"><i>↗</i><span><small>NEW BUYING SIGNAL</small><b>High-intent account found</b></span></div>
+        <div class="floating-card approval-card"><i>✓</i><span><small>SAFE OUTREACH</small><b>Human approval enabled</b></span></div>
+      </div>
+    </section>
+
+    <section class="audience-strip" aria-label="Platform use cases">
+      <span>BUILT FOR MODERN REVENUE TEAMS</span>
+      <div><b>Demand generation</b><b>Sales operations</b><b>Customer support</b><b>Automation teams</b><b>Business leaders</b></div>
+    </section>
+
+    <section class="platform-section" id="platform">
+      <div class="section-intro">
+        <span class="section-label">ONE CONNECTED PLATFORM</span>
+        <h2>From first signal to lasting customer value.</h2>
+        <p>Replace disconnected tools and manual handoffs with one clear operating model for acquisition, sales and customer work.</p>
+      </div>
+      <div class="capability-grid">
+        <article class="featured-capability">
+          <span class="capability-icon">⌁</span><small>01 · ACQUISITION</small><h3>Discover accounts that fit your market.</h3><p>Define your ideal customer profile, prioritize intent and create campaign-ready target lists.</p><a [routerLink]="auth.loggedIn() ? '/discover' : '/login'">Explore prospect discovery <span>→</span></a>
+          <div class="mini-prospects"><span><i>NL</i><b>NordLine</b><em>96 fit</em></span><span><i>AF</i><b>Atlas Freight</b><em>91 fit</em></span><span><i>VM</i><b>VeloMove</b><em>88 fit</em></span></div>
+        </article>
+        <article><span class="capability-icon violet-icon">✦</span><small>02 · OUTREACH</small><h3>Engage safely, with people in control.</h3><p>Verify senders, respect suppression rules and approve every important message before launch.</p></article>
+        <article><span class="capability-icon green-icon">↗</span><small>03 · SALES</small><h3>Convert intent into pipeline.</h3><p>Route qualified leads, track opportunities and move every next action forward with context.</p></article>
+        <article><span class="capability-icon amber-icon">▱</span><small>04 · CUSTOMER</small><h3>Unify conversations and issues.</h3><p>Keep inbox, customer history, tickets and knowledge together so teams resolve work faster.</p></article>
+        <article><span class="capability-icon rose-icon">↯</span><small>05 · AUTOMATION</small><h3>Automate repeatable operations.</h3><p>Design governed workflows with visible triggers, decisions, retries and execution history.</p></article>
+      </div>
+    </section>
+
+    <section class="operations-section" id="operations">
+      <div class="operations-copy">
+        <span class="section-label">VISIBLE OPERATIONS</span>
+        <h2>Know what is happening, why it matters and what comes next.</h2>
+        <p>QualifyAI gives every role a shared operating picture while keeping ownership and controls explicit.</p>
+        <ul>
+          <li><i>01</i><span><b>Prioritize the right work</b><small>Fit, intent, status and value make the next action obvious.</small></span></li>
+          <li><i>02</i><span><b>Keep context connected</b><small>Companies, contacts, campaigns, conversations and outcomes stay linked.</small></span></li>
+          <li><i>03</i><span><b>Measure commercial impact</b><small>Track pipeline, influenced revenue, won value and automation leverage.</small></span></li>
+        </ul>
+      </div>
+      <div class="operations-board">
+        <header><div><small>ACTIVE PIPELINE</small><b>Qualified opportunities</b></div><span>€184,250 total</span></header>
+        <div class="pipeline-columns"><span>ACCOUNT</span><span>STAGE</span><span>OWNER</span><span>VALUE</span></div>
+        <div class="pipeline-row"><span><i>NC</i><b>NordCargo Group</b></span><em class="blue-pill">Demo booked</em><small>Elena</small><strong>€46,000</strong></div>
+        <div class="pipeline-row"><span><i>AF</i><b>Atlas Freight</b></span><em class="violet-pill">Qualified</em><small>Martin</small><strong>€38,500</strong></div>
+        <div class="pipeline-row"><span><i>VT</i><b>Vector Transit</b></span><em class="amber-pill">Proposal</em><small>Sarah</small><strong>€31,750</strong></div>
+        <footer><span><i></i> All systems operating normally</span><b>Updated live</b></footer>
+      </div>
+    </section>
+
+    <section class="journey-section">
+      <div class="section-intro compact-intro"><span class="section-label">ONE CONTINUOUS JOURNEY</span><h2>A clearer path from market to customer.</h2></div>
+      <div class="journey-grid">
+        <article><i>01</i><span>DISCOVER</span><h3>Find the right companies</h3><p>Profile markets and qualify accounts using signals that matter.</p></article>
+        <article><i>02</i><span>ENGAGE</span><h3>Launch controlled outreach</h3><p>Prepare relevant messages with verification and approval built in.</p></article>
+        <article><i>03</i><span>CONVERT</span><h3>Build qualified pipeline</h3><p>Turn replies and intent into opportunities, demos and owned actions.</p></article>
+        <article><i>04</i><span>RETAIN</span><h3>Operate the customer lifecycle</h3><p>Resolve conversations, tickets and knowledge gaps in one context.</p></article>
+      </div>
+    </section>
+
+    <section class="security-section" id="security">
+      <div><span class="section-label light-label">GOVERNED BY DESIGN</span><h2>Automation your team can trust.</h2><p>Move faster without losing control. Every tenant, action and customer interaction follows explicit permissions and operational guardrails.</p><a href="#contact">Discuss your requirements <span>→</span></a></div>
+      <div class="security-grid">
+        <article><i>✓</i><span><b>Tenant isolation</b><small>Data and access remain scoped to the correct workspace.</small></span></article>
+        <article><i>✓</i><span><b>Role-based access</b><small>Modules and actions follow license and permission controls.</small></span></article>
+        <article><i>✓</i><span><b>Human approval</b><small>Critical outreach stays reviewable before it is sent.</small></span></article>
+        <article><i>✓</i><span><b>Operational audit</b><small>Executions, decisions and outcomes remain visible.</small></span></article>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+      <div class="contact-copy"><span class="section-label">PRODUCT DEMO</span><h2>See how QualifyAI fits your revenue operation.</h2><p>Bring your use case. We will map the journey from prospect discovery to pipeline, customer operations and governed automation.</p></div>
+      <div class="contact-card">
+        <div><span>START A CONVERSATION</span><a href="mailto:hello@qualifyai.com">hello&#64;qualifyai.com</a><small>Remote product demos · Available worldwide</small></div>
+        <a class="primary-cta" href="mailto:hello@qualifyai.com?subject=QualifyAI%20product%20demo">Request a tailored demo <span>→</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <a class="brand footer-brand" routerLink="/"><i class="brand-mark"><span></span><span></span><span></span></i><span><b>Qualify</b><strong>AI</strong></span></a>
+    <p>Revenue and customer operations, connected.</p>
+    <nav><a href="#platform">Platform</a><a href="#security">Security</a><a href="#contact">Contact</a><a routerLink="/login">Sign in</a></nav>
+    <small>© {{ year }} QualifyAI. All rights reserved.</small>
+  </footer>
+</div>
