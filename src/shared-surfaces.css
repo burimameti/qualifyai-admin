@@ -1,5 +1,5 @@
 /* Shared card, content-row and data-grid system for every feature screen. */
-:root{--surface-border:#dce4ef;--surface-header:#eff6ff;--surface-header-end:#f8fbff;--surface-row:#f8faff;--surface-row-hover:#eef5ff;--surface-title:#172554;--surface-shadow:0 8px 24px #0f172a0b}
+:root{--surface-border:#dce4ef;--surface-header:#eff6ff;--surface-header-end:#f8fbff;--surface-row:#f8faff;--surface-row-hover:#eef5ff;--surface-title:#172554;--surface-shadow:0 1px 2px #0f172a0a}
 
 .page :is(.panel,.data-card,.metric-card,.company-card,.plan-card,.revenue-card,.campaigns,.safety,.contacts-card,.integration-grid>article,.pack-grid>article,.gap-cards>article){background:#fff;border:1px solid var(--surface-border);border-radius:16px;box-shadow:var(--surface-shadow)}
 .page :is(.panel,.data-card,.company-card,.plan-card,.revenue-card,.integration-grid>article,.pack-grid>article,.gap-cards>article){padding:20px}
@@ -30,9 +30,9 @@
 .page .panel.table-wrap>table{margin-left:-20px;margin-right:-20px;width:calc(100% + 40px)}
 .page .panel.table-wrap>header{margin-bottom:0!important}
 .page .panel.table-wrap>header+table{margin-top:0}
-.page table thead th{background:#eaf2ff!important;border-bottom:1px solid #c7d9ff!important;border-top:1px solid #d7e3f5;color:#475569!important;font-size:11px!important;font-weight:800!important;letter-spacing:.055em;padding:13px 14px!important;text-transform:uppercase}
+.page table thead th{background:#eaf2ff!important;border-bottom:1px solid #c7d9ff!important;border-top:1px solid #d7e3f5;color:#475569!important;font-size:12px!important;font-weight:800!important;letter-spacing:.045em;padding:14px!important;text-transform:uppercase}
 .page table thead th:first-child{padding-left:18px!important}.page table thead th:last-child{padding-right:18px!important}
-.page table tbody td{background:#fff;border-bottom:1px solid #edf1f6!important;color:#475569;font-size:13px!important;padding:14px!important;vertical-align:middle}
+.page table tbody td{background:#fff;border-bottom:1px solid #edf1f6!important;color:#475569;font-size:14px!important;padding:15px 14px!important;vertical-align:middle}
 .page table tbody tr:nth-child(even) td{background:var(--surface-row)}
 .page table tbody tr:hover td{background:var(--surface-row-hover)!important}
 .page table tbody tr:hover td:first-child{box-shadow:inset 3px 0 #2563eb}

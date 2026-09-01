@@ -255,6 +255,7 @@ import { InboxService } from "./inbox.service";
       </form></qai-modal
     >
   `,
+  styleUrl: "./inbox.page.css",
 })
 export class InboxPage implements OnInit {
   items: any[] = [];

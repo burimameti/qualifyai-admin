@@ -24,10 +24,13 @@ import { MeetingsService } from "./meetings.service";
         <p>{{ error }}</p>
       </div>
     </div>
-    <section class="panel table-wrap">
+    <section class="directory-card">
+      <header><div><span class="eyebrow">CALENDAR DIRECTORY</span><h2>Meeting workspace</h2><p>Every discovery call, demo and follow-up in one schedule.</p></div><div class="directory-summary"><span><b>{{ rows.length }}</b>Total</span><span><b>{{ bookedCount }}</b>Booked</span><span><b>{{ completedCount }}</b>Completed</span></div></header>
+      <div class="directory-toolbar"><label><span>⌕</span><input [(ngModel)]="query" placeholder="Search contact or meeting status" /></label><select [(ngModel)]="statusFilter"><option value="">All statuses</option><option>booked</option><option>completed</option><option>cancelled</option><option>no-show</option></select><strong>{{ visible.length }} shown</strong></div>
       <div class="data-state" *ngIf="loading">Loading meetings…</div>
-      <div class="data-state" *ngIf="!loading && !rows.length">
-        <b>No meetings booked</b
+      <div class="directory-empty" *ngIf="!loading && !visible.length">
+        <i>◷</i>
+        <strong>{{ rows.length ? "No meetings match the filters" : "No meetings booked" }}</strong
         ><span
           >Schedule a discovery call from a qualified reply or CRM
           contact.</span
@@ -35,7 +38,7 @@ import { MeetingsService } from "./meetings.service";
           Schedule first meeting
         </button>
       </div>
-      <table *ngIf="!loading && rows.length">
+      <div class="table-wrap" *ngIf="!loading && visible.length"><table>
         <thead>
           <tr>
             <th>Starts</th>
@@ -47,23 +50,22 @@ import { MeetingsService } from "./meetings.service";
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of rows">
+          <tr *ngFor="let row of visible">
             <td>
-              <b>{{ row.startsAtUtc | date: "medium" }}</b>
+              <div class="directory-identity"><i>◷</i><span><b>{{ row.startsAtUtc | date: "mediumDate" }}</b><small>{{ row.startsAtUtc | date: "shortTime" }}</small></span></div>
             </td>
             <td>{{ duration(row) }} min</td>
             <td>{{ contactName(row.contactId) }}</td>
             <td>
-              <span class="pill">{{ row.status }}</span>
+              <span class="pill" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
             </td>
             <td>{{ row.externalEventId ? "Synced" : "Internal booking" }}</td>
             <td>
-              <button (click)="open(row)">Edit</button
-              ><button class="danger" (click)="remove(row)">Cancel</button>
+              <div class="directory-actions"><button (click)="open(row)">Edit</button><button class="danger" (click)="remove(row)">Cancel</button></div>
             </td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
     <qai-modal
       [open]="show"
@@ -128,6 +130,8 @@ export class MeetingsPage implements OnInit {
   error = "";
   loading = false;
   saving = false;
+  query = "";
+  statusFilter = "";
   constructor(
     private data: MeetingsService,
     private crm: CrmService,
@@ -168,6 +172,16 @@ export class MeetingsPage implements OnInit {
         error: (e) => (this.error = this.apiError(e)),
       });
   }
+  get visible() {
+    const term = this.query.trim().toLowerCase();
+    return this.rows.filter((row) =>
+      (!term || `${this.contactName(row.contactId)} ${row.status}`.toLowerCase().includes(term)) &&
+      (!this.statusFilter || String(row.status).toLowerCase() === this.statusFilter),
+    );
+  }
+  get bookedCount() { return this.rows.filter((row) => String(row.status).toLowerCase() === "booked").length; }
+  get completedCount() { return this.rows.filter((row) => String(row.status).toLowerCase() === "completed").length; }
+  statusClass(value: unknown) { const status = String(value).toLowerCase(); return status === "booked" ? "status-pending" : status === "completed" ? "status-success" : status === "cancelled" || status === "no-show" ? "status-failed" : ""; }
   open(row?: any, contactId?: string) {
     this.form = row
       ? { ...row }

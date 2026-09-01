@@ -33,6 +33,7 @@ export class PipelinePage implements OnInit {
   loading = false;
   saving = false;
   error = "";
+  pipelineQuery = "";
   drag: Opportunity | null = null;
   selectedOpportunity: Opportunity | null = null;
   pipelineForm = { name: "", isDefault: false };
@@ -79,6 +80,10 @@ export class PipelinePage implements OnInit {
   }
   get selected() {
     return this.pipelines.find((x) => x.id === this.selectedId);
+  }
+  get visiblePipelines() {
+    const term = this.pipelineQuery.trim().toLowerCase();
+    return this.pipelines.filter((pipeline) => !term || pipeline.name.toLowerCase().includes(term));
   }
   get selectedStages() {
     return this.stages

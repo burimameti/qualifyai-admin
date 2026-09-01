@@ -15,30 +15,25 @@ import { Modal,PageHeader } from '../../shared/ui';
 
     <div class="callout warning" *ngIf="error"><span class="callout-icon">!</span><div><b>Leads could not be loaded</b><p>{{error}}</p></div></div>
 
-    <div class="metrics compact">
-      <article><span>Hot</span><strong>{{count(80,101)}}</strong><small>Immediate sales action</small></article>
-      <article><span>Warm</span><strong>{{count(50,80)}}</strong><small>Nurture / qualify</small></article>
-      <article><span>Potential value</span><strong>{{money(total())}}</strong><small>Across active leads</small></article>
-    </div>
-
-    <div class="toolbar">
-      <input [(ngModel)]="q" placeholder="Search intent or source">
-      <select [(ngModel)]="temp">
-        <option value="">All temperatures</option><option>Hot</option><option>Warm</option><option>Cold</option>
-      </select>
-    </div>
-
-    <section class="panel table-wrap">
+    <section class="directory-card">
+      <header>
+        <div><span class="eyebrow">SALES DIRECTORY</span><h2>Qualified lead workspace</h2><p>Review intent, value and qualification state from one structured list.</p></div>
+        <div class="directory-summary"><span><b>{{rows.length}}</b>Total</span><span><b>{{count(80,101)}}</b>Hot</span><span><b>{{money(total())}}</b>Value</span></div>
+      </header>
+      <div class="directory-toolbar">
+        <label><span>⌕</span><input [(ngModel)]="q" placeholder="Search intent or source"></label>
+        <select [(ngModel)]="temp"><option value="">All temperatures</option><option>Hot</option><option>Warm</option><option>Cold</option></select>
+        <strong>{{visible.length}} shown</strong>
+      </div>
       <div class="data-state" *ngIf="loading">Loading leads…</div>
-      <div class="data-state" *ngIf="!loading && !error && !visible.length"><b>{{rows.length?'No matching leads':'No leads yet'}}</b><span>Create a lead from an existing contact or run the acquisition workflow.</span><button class="primary" (click)="openCreate()">Create lead</button></div>
-      <table *ngIf="!loading && visible.length"><thead><tr><th>Score</th><th>Intent</th><th>Source</th><th>Temperature</th><th>Status</th><th>Est. value</th><th>Action</th></tr></thead>
+      <div class="directory-empty" *ngIf="!loading && !error && !visible.length"><i>◆</i><strong>{{rows.length?'No matching leads':'No leads yet'}}</strong><span>Create a lead from an existing contact or run the acquisition workflow.</span><button class="primary" (click)="openCreate()">Create lead</button></div>
+      <div class="table-wrap" *ngIf="!loading && visible.length"><table><thead><tr><th>Lead</th><th>Score</th><th>Source</th><th>Temperature</th><th>Status</th><th>Est. value</th><th>Actions</th></tr></thead>
       <tbody><tr *ngFor="let x of visible">
-        <td><span class="score" [class.hot]="x.score>=80">{{x.score}}</span></td>
-        <td><b>{{x.intentSummary||'New enquiry'}}</b><small>{{x.id}}</small></td>
-        <td>{{x.source}}</td><td><span class="pill" [class.hot]="x.score>=80">{{temperature(x)}}</span></td>
-        <td>{{x.status}}</td><td>{{money(x.estimatedValue||0)}}</td>
-        <td><button class="small" (click)="qualify(x)">Qualify</button><button class="small" (click)="convert(x)">Create opportunity</button></td>
-      </tr></tbody></table>
+        <td><div class="directory-identity"><i>{{x.score}}</i><span><b>{{x.intentSummary||'New enquiry'}}</b><small>Qualified demand</small></span></div></td>
+        <td><span class="score" [class.hot]="x.score>=80">{{x.score}}</span></td><td>{{x.source||'—'}}</td><td><span class="pill" [class.hot]="x.score>=80">{{temperature(x)}}</span></td>
+        <td>{{x.status||'New'}}</td><td><b>{{money(x.estimatedValue||0)}}</b></td>
+        <td><div class="directory-actions"><button class="small" (click)="qualify(x)">Qualify</button><button class="small primary" (click)="convert(x)">Create opportunity</button></div></td>
+      </tr></tbody></table></div>
     </section>
 
     <qai-modal [open]="showCreate" title="Create lead" (close)="showCreate=false">

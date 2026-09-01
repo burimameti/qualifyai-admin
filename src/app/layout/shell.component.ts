@@ -71,17 +71,27 @@ interface NavigationItem {
 
       <main>
         <header class="app-header">
-          <label class="global-search">
-            <span>⌕</span>
-            <input
-              [(ngModel)]="query"
-              (input)="openSearchFromHeader()"
-              (keydown.enter)="openFirstSearchResult($event)"
-              placeholder="Search pages and modules"
-              aria-label="Search pages and modules"
-            />
-            <kbd>Ctrl K</kbd>
-          </label>
+          <div class="header-search-wrap" (click)="$event.stopPropagation()">
+            <label class="global-search" [class.active]="headerSearchOpen">
+              <span>⌕</span>
+              <input
+                [(ngModel)]="query"
+                (focus)="openSearchFromHeader()"
+                (input)="openSearchFromHeader()"
+                (keydown.enter)="openFirstSearchResult($event)"
+                placeholder="Search pages and modules"
+                aria-label="Search pages and modules"
+              />
+              <kbd>Ctrl K</kbd>
+            </label>
+            <section class="header-search-results" *ngIf="headerSearchOpen && query.trim()">
+              <p>{{ searchResults.length }} matching destinations</p>
+              <button type="button" *ngFor="let item of searchResults | slice: 0:6" (click)="go(item.url)">
+                <i>{{ item.icon }}</i><span><b>{{ item.label }}</b><small>{{ item.group }}</small></span><em>→</em>
+              </button>
+              <div *ngIf="!searchResults.length"><b>No matching page</b><span>Try a module or page name.</span></div>
+            </section>
+          </div>
           <div class="head-actions">
             <button
               type="button"
@@ -231,6 +241,7 @@ interface NavigationItem {
 export class ShellComponent {
   @ViewChild("searchInput") searchInput?: ElementRef<HTMLInputElement>;
   searchOpen = false;
+  headerSearchOpen = false;
   helpOpen = false;
   accountOpen = false;
   query = "";
@@ -467,6 +478,11 @@ export class ShellComponent {
     } else if (event.key === "Escape") this.closeOverlays();
   }
 
+  @HostListener("document:click")
+  closeHeaderSearch() {
+    this.headerSearchOpen = false;
+  }
+
   get session() {
     return this.auth.session();
   }
@@ -519,8 +535,7 @@ export class ShellComponent {
   openSearchFromHeader() {
     this.helpOpen = false;
     this.accountOpen = false;
-    this.searchOpen = true;
-    setTimeout(() => this.searchInput?.nativeElement.focus());
+    this.headerSearchOpen = true;
   }
   openFirstSearchResult(event: Event) {
     event.preventDefault();
@@ -539,6 +554,7 @@ export class ShellComponent {
   }
   closeOverlays() {
     this.searchOpen = false;
+    this.headerSearchOpen = false;
     this.helpOpen = false;
     this.accountOpen = false;
   }
