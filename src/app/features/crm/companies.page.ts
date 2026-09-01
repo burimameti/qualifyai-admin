@@ -14,12 +14,12 @@ import { CrmService } from './crm.service';
       <button class="primary" (click)="open()">+ Add company</button>
     </qai-page-header>
     <div class="callout warning" *ngIf="error"><span class="callout-icon">!</span><div><b>Companies could not be loaded</b><p>{{ error }}</p></div></div>
-    <section class="companies-card">
+    <section class="directory-card">
       <header>
         <div><span class="eyebrow">CRM DIRECTORY</span><h2>Company workspace</h2><p>Search and manage every account in one consistent directory.</p></div>
-        <div class="company-summary"><b>{{ rows.length }}</b><span>Total companies</span></div>
+        <div class="directory-summary"><span><b>{{ rows.length }}</b>Total</span></div>
       </header>
-      <div class="company-toolbar">
+      <div class="directory-toolbar">
         <label><span>⌕</span><input [(ngModel)]="q" placeholder="Search company, domain or industry" /></label>
         <strong>{{ visible.length }} shown</strong>
       </div>
@@ -28,15 +28,15 @@ import { CrmService } from './crm.service';
         <table>
           <thead><tr><th>Company</th><th>Domain</th><th>Industry</th><th>Country</th><th>Employees</th><th>Revenue</th><th>Actions</th></tr></thead>
           <tbody><tr *ngFor="let x of visible">
-            <td><div class="company-name"><i>{{ initials(x.name) }}</i><span><b>{{ x.name }}</b><small>CRM account</small></span></div></td>
+            <td><div class="directory-identity"><i>{{ initials(x.name) }}</i><span><b>{{ x.name }}</b><small>CRM account</small></span></div></td>
             <td><a class="domain-link" [href]="companyUrl(x.domain)" target="_blank" rel="noopener">{{ x.domain || '—' }}</a></td>
             <td>{{ x.industry || '—' }}</td><td>{{ x.country || '—' }}</td><td>{{ x.employees || '—' }}</td><td>{{ x.annualRevenue ? money(x.annualRevenue) : '—' }}</td>
-            <td><div class="row-actions"><button (click)="open(x)">✎ Edit</button><button class="danger" (click)="remove(x)">Delete</button></div></td>
+            <td><div class="directory-actions"><button (click)="open(x)">✎ Edit</button><button class="danger" (click)="remove(x)">Delete</button></div></td>
           </tr></tbody>
         </table>
       </div>
-      <div class="company-empty" *ngIf="!loading && !error && !visible.length">
-        <b>▦</b><strong>{{ rows.length ? 'No matching companies' : 'No companies yet' }}</strong>
+      <div class="directory-empty" *ngIf="!loading && !error && !visible.length">
+        <i>▦</i><strong>{{ rows.length ? 'No matching companies' : 'No companies yet' }}</strong>
         <span>{{ rows.length ? 'Change the search to see more accounts.' : 'Add a company or install the complete demo scenario.' }}</span>
         <button class="primary" *ngIf="!rows.length" (click)="open()">Add company</button>
       </div>
@@ -49,8 +49,7 @@ import { CrmService } from './crm.service';
         <footer><button type="button" (click)="show = false">Cancel</button><button class="primary" type="submit">Save company</button></footer>
       </form>
     </qai-modal>
-  `,
-  styleUrl: './companies.page.css'
+  `
 })
 export class CompaniesPage implements OnInit {
   rows: Company[] = []; q = ''; show = false; loading = false; error = ''; form: Partial<Company> = {};

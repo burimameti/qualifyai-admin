@@ -24,7 +24,6 @@
               "src/app-header.css",
               "src/shared-surfaces.css",
               "src/shared-forms.css",
-              "src/shared-directories.css",
               "src/shared-actions.css"
             ]
           },

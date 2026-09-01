@@ -14,12 +14,12 @@ import { CrmService } from './crm.service';
       <button class="export-action" (click)="exportCsv()">⇩ Export CSV</button>
       <button class="primary" (click)="open()">+ Add contact</button>
     </qai-page-header>
-    <section class="contacts-card">
+    <section class="directory-card">
       <header>
-        <div><span>CRM DIRECTORY</span><h2>Contact workspace</h2><p>Search, review and manage every person in the customer lifecycle.</p></div>
-        <div class="contact-stats"><span><b>{{ rows.length }}</b>Total</span><span><b>{{ leadCount }}</b>Leads</span><span><b>{{ customerCount }}</b>Customers</span></div>
+        <div><span class="eyebrow">CRM DIRECTORY</span><h2>Contact workspace</h2><p>Search, review and manage every person in the customer lifecycle.</p></div>
+        <div class="directory-summary"><span><b>{{ rows.length }}</b>Total</span><span><b>{{ leadCount }}</b>Leads</span><span><b>{{ customerCount }}</b>Customers</span></div>
       </header>
-      <div class="contact-toolbar">
+      <div class="directory-toolbar">
         <label><span>⌕</span><input [(ngModel)]="q" placeholder="Search name, email or phone" /></label>
         <select [(ngModel)]="stage"><option value="">All lifecycle stages</option><option>visitor</option><option>lead</option><option>customer</option></select>
         <strong>{{ visible.length }} shown</strong>
@@ -28,14 +28,14 @@ import { CrmService } from './crm.service';
         <table>
           <thead><tr><th>Contact</th><th>Email</th><th>Phone</th><th>Lifecycle</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody><tr *ngFor="let x of visible">
-            <td><div class="person"><i>{{ initials(x) }}</i><span><b>{{ x.firstName }} {{ x.lastName }}</b><small>CRM contact</small></span></div></td>
+            <td><div class="directory-identity"><i>{{ initials(x) }}</i><span><b>{{ x.firstName }} {{ x.lastName }}</b><small>CRM contact</small></span></div></td>
             <td><a class="email-link" [href]="'mailto:' + x.email">{{ x.email || '—' }}</a></td><td>{{ x.phone || '—' }}</td>
             <td><span class="lifecycle" [class.customer]="x.lifecycleStage === 'customer'" [class.lead]="x.lifecycleStage === 'lead'">{{ x.lifecycleStage || 'visitor' }}</span></td>
             <td>{{ x.createdAtUtc | date: 'mediumDate' }}</td>
-            <td><div class="row-actions"><button class="edit-action" (click)="open(x)">✎ Edit</button><button class="danger delete-action" (click)="remove(x)">Delete</button></div></td>
+            <td><div class="directory-actions"><button (click)="open(x)">✎ Edit</button><button class="danger" (click)="remove(x)">Delete</button></div></td>
           </tr></tbody>
         </table>
-        <div class="contact-empty" *ngIf="!visible.length"><b>◎</b><strong>No contacts found</strong><span>Change the filters or add the first contact.</span></div>
+        <div class="directory-empty" *ngIf="!visible.length"><i>◎</i><strong>No contacts found</strong><span>Change the filters or add the first contact.</span></div>
       </div>
     </section>
     <qai-modal [open]="show" [title]="form.id ? 'Edit contact' : 'New contact'" (close)="show = false">
@@ -45,8 +45,7 @@ import { CrmService } from './crm.service';
         <label>Lifecycle<select [(ngModel)]="form.lifecycleStage" name="stage"><option>visitor</option><option>lead</option><option>customer</option></select></label>
         <footer><button type="button" (click)="show = false">Cancel</button><button class="primary" type="submit">Save contact</button></footer>
       </form>
-    </qai-modal>`,
-  styleUrl: './contacts.page.css'
+    </qai-modal>`
 })
 export class ContactsPage implements OnInit {
   rows: Contact[] = []; q = ''; stage = ''; show = false; form: Partial<Contact> = { lifecycleStage: 'lead' };
