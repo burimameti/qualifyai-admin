@@ -13,203 +13,115 @@ import { AcquisitionService } from "./acquisition.service";
       title="Prospect Discovery"
       subtitle="Define who you want to sell to, collect market evidence and prioritize companies showing real buying intent."
     >
-      <button (click)="load()">↻ Refresh</button
-      ><button (click)="openIcp()">+ Ideal customer profile</button
-      ><button class="primary" [disabled]="!activeIcp" (click)="openBulk()">
-        ⇧ Import verified companies</button
-      ><button (click)="prospectOpen = true">+ One prospect</button>
+      <button class="quiet-action" (click)="load()">↻ Refresh data</button>
+      <button (click)="openIcp()">+ New ICP</button>
+      <button (click)="prospectOpen = true">+ Add prospect</button>
+      <button class="primary" [disabled]="!activeIcp" (click)="openBulk()">⇧ Import companies</button>
     </qai-page-header>
-    <section class="product-journey">
-      <header>
-        <div>
-          <span class="section-kicker">Acquisition workflow</span>
-          <h2>From market definition to a controlled campaign</h2>
-          <p>
-            Complete each stage in order. QualifyAI keeps the evidence, audience
-            and approval trail connected.
-          </p>
+    <section class="discovery-hero">
+      <div class="hero-copy">
+        <span class="section-kicker">Acquisition workflow</span>
+        <h2>Build an evidence-backed target market</h2>
+        <p>Define fit, import verified accounts and move only qualified prospects into controlled outreach.</p>
+        <div class="hero-context">
+          <span><i></i>{{ activeIcp ? activeIcp.name : 'ICP required' }}</span>
+          <span><b>{{ selectedIds.size }}</b> selected</span>
+          <span><b>{{ overview.hot || 0 }}</b> high priority</span>
         </div>
-      </header>
-      <qai-wizard-steps
-        [steps]="[
-          'Define ICP',
-          'Add verified data',
-          'Build audience',
-          'Launch campaign',
-        ]"
-        [descriptions]="[
-          'Who should buy',
-          'Import with source',
-          'Select qualified accounts',
-          'Approve before send',
-        ]"
-        [current]="journeyStep"
-      />
+      </div>
+      <div class="journey-panel">
+        <span class="journey-label">Current workflow progress</span>
+        <qai-wizard-steps
+          [steps]="['Define ICP', 'Verify data', 'Build audience', 'Launch']"
+          [descriptions]="['Target market', 'Trusted source', 'Qualified accounts', 'Approval gate']"
+          [current]="journeyStep"
+        />
+      </div>
     </section>
-    <div class="metrics">
-      <article>
-        <span>Discovered</span><strong>{{ overview.discovered || 0 }}</strong
-        ><small>Companies and decision-makers</small>
-      </article>
-      <article>
-        <span>Hot prospects</span><strong>{{ overview.hot || 0 }}</strong
-        ><small>High fit and current intent</small>
-      </article>
-      <article>
-        <span>Active campaigns</span
-        ><strong>{{ overview.activeCampaigns || 0 }}</strong
-        ><small>Running outreach sequences</small>
-      </article>
-      <article>
-        <span>Replies</span><strong>{{ overview.replies || 0 }}</strong
-        ><small>Campaign conversations</small>
-      </article>
-      <article>
-        <span>Demo ready</span><strong>{{ overview.demoReady || 0 }}</strong
-        ><small>Ready for sales handoff</small>
-      </article>
-    </div>
-    <div class="grid2">
-      <section class="panel">
-        <header>
-          <div>
-            <b>Ideal customer profiles</b
-            ><span>Discovery and scoring rules</span>
-          </div>
+
+    <section class="discovery-metrics">
+      <article class="metric-card blue"><i>◆</i><div><span>Discovered</span><strong>{{ overview.discovered || 0 }}</strong><small>Verified accounts</small></div></article>
+      <article class="metric-card rose"><i>↗</i><div><span>Hot prospects</span><strong>{{ overview.hot || 0 }}</strong><small>Fit + buying intent</small></div></article>
+      <article class="metric-card violet"><i>◈</i><div><span>Active campaigns</span><strong>{{ overview.activeCampaigns || 0 }}</strong><small>Controlled outreach</small></div></article>
+      <article class="metric-card amber"><i>↩</i><div><span>Replies</span><strong>{{ overview.replies || 0 }}</strong><small>Open conversations</small></div></article>
+      <article class="metric-card green"><i>✓</i><div><span>Demo ready</span><strong>{{ overview.demoReady || 0 }}</strong><small>Sales handoff</small></div></article>
+    </section>
+
+    <div class="notice error-notice" *ngIf="error"><b>!</b><span>{{ error }}</span></div>
+    <div class="notice success-notice" *ngIf="message"><b>✓</b><span>{{ message }}</span></div>
+
+    <section class="workspace-grid">
+      <article class="workspace-card icp-card">
+        <header class="workspace-header">
+          <div><span class="section-kicker">QUALIFICATION MODEL</span><h3>Ideal customer profiles</h3><p>Choose the rules used to qualify this audience.</p></div>
+          <button class="header-action" (click)="openIcp()">+ New profile</button>
         </header>
-        <div class="gap" *ngFor="let x of icps">
-          <div>
-            <b>{{ x.name }}</b
-            ><span
-              >{{ x.industry || "All industries" }} ·
-              {{ x.countriesCsv || "All countries" }} ·
-              {{ x.minimumEmployees || 0 }}–{{
-                x.maximumEmployees || "∞"
-              }}
-              employees</span
-            >
-          </div>
-          <label
-            ><input
-              type="radio"
-              name="activeIcp"
-              [value]="x.id"
-              [(ngModel)]="selectedIcpId"
-              [disabled]="!x.active"
-            />
-            {{ x.active ? "Use profile" : "Paused" }}</label
-          >
+        <div class="profile-list" *ngIf="icps.length">
+          <label class="profile-option" *ngFor="let x of icps" [class.selected]="selectedIcpId === x.id" [class.paused]="!x.active">
+            <input type="radio" name="activeIcp" [value]="x.id" [(ngModel)]="selectedIcpId" [disabled]="!x.active" />
+            <span class="profile-mark">{{ x.name.charAt(0) }}</span>
+            <span class="profile-copy"><strong>{{ x.name }}</strong><small>{{ x.industry || 'All industries' }} · {{ x.countriesCsv || 'All countries' }}</small><em>{{ x.minimumEmployees || 0 }}–{{ x.maximumEmployees || '∞' }} employees</em></span>
+            <span class="profile-state">{{ x.active ? (selectedIcpId === x.id ? 'Selected' : 'Use profile') : 'Paused' }}</span>
+          </label>
         </div>
-        <p *ngIf="!icps.length">
-          Create an ideal customer profile, then import companies from a
-          verified source.
-        </p>
-        <p class="error" *ngIf="error">{{ error }}</p>
-        <p *ngIf="message">{{ message }}</p>
-      </section>
-      <section class="panel">
-        <header>
-          <div>
-            <b>Build target list</b
-            ><span>Select prospects and prepare a campaign audience</span>
-          </div>
+        <div class="empty-state" *ngIf="!icps.length"><i>◎</i><strong>No customer profile yet</strong><span>Create an ICP before importing company data.</span><button (click)="openIcp()">Create first profile</button></div>
+      </article>
+
+      <article class="workspace-card audience-card">
+        <header class="workspace-header">
+          <div><span class="section-kicker">AUDIENCE BUILDER</span><h3>Create target list</h3><p>Turn selected companies into a reusable campaign audience.</p></div>
         </header>
-        <label
-          >List name<input
-            [(ngModel)]="listName"
-            placeholder="DACH manufacturers with freight demand"
-        /></label>
-        <button
-          class="primary"
-          [disabled]="!selectedIds.size || !listName.trim()"
-          (click)="createList()"
-        >
-          Create list with {{ selectedIds.size }} prospects
-        </button>
-      </section>
-    </div>
-    <section class="panel table-wrap">
-      <header>
-        <div>
-          <b>Prioritized prospects</b
-          ><span
-            >Fit and intent are scored separately so famous does not mean
-            hot.</span
-          >
+        <div class="selection-summary">
+          <span class="selection-count">{{ selectedIds.size }}</span>
+          <div><strong>Prospects selected</strong><span>{{ selectedIds.size ? 'Ready to create an audience' : 'Select accounts from the grid below' }}</span></div>
         </div>
-        <label
-          >Minimum score
-          <input
-            type="number"
-            min="0"
-            max="100"
-            [(ngModel)]="minimumScore"
-            (change)="loadProspects()"
-        /></label>
+        <label class="list-name">Target list name<input [(ngModel)]="listName" placeholder="DACH manufacturers with freight demand" /></label>
+        <button class="primary create-list" [disabled]="!selectedIds.size || !listName.trim()" (click)="createList()">Create target list <span>→</span></button>
+        <small class="audience-help">Creating a list does not send outreach.</small>
+      </article>
+    </section>
+
+    <section class="prospect-card">
+      <header class="prospect-header">
+        <div><span class="section-kicker">MARKET EVIDENCE</span><h3>Prioritized prospects</h3><p>Fit and intent remain separate so account size is never mistaken for buying readiness.</p></div>
+        <label class="score-filter"><span>Minimum score</span><input type="number" min="0" max="100" [(ngModel)]="minimumScore" (change)="loadProspects()" /></label>
       </header>
-      <table>
+      <div class="prospect-toolbar">
+        <span><b>{{ prospects.length }}</b> prospects shown</span>
+        <span *ngIf="selectedIds.size"><b>{{ selectedIds.size }}</b> selected for audience</span>
+        <button *ngIf="selectedIds.size" (click)="selectedIds.clear()">Clear selection</button>
+      </div>
+      <div class="prospect-table-wrap" *ngIf="prospects.length">
+      <table class="prospect-table">
         <thead>
           <tr>
-            <th>
-              <input
-                type="checkbox"
-                [checked]="allSelected"
-                [disabled]="!prospects.length"
-                (change)="toggleAll()"
-              />
-            </th>
-            <th>Company</th>
+            <th class="select-column"><input type="checkbox" [checked]="allSelected" [disabled]="!prospects.length" (change)="toggleAll()" /></th>
+            <th>Company account</th>
             <th>Decision maker</th>
             <th>Market</th>
-            <th>Fit</th>
-            <th>Intent</th>
+            <th class="center">Fit</th>
+            <th class="center">Intent</th>
             <th>Priority</th>
             <th>Status</th>
-            <th></th>
+            <th class="action-column">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let x of prospects">
-            <td>
-              <input
-                type="checkbox"
-                [checked]="selectedIds.has(x.id)"
-                (change)="toggle(x.id)"
-              />
-            </td>
-            <td>
-              <b>{{ x.companyName }}</b
-              ><small
-                >{{ x.domain }} · {{ x.source || "Source not recorded" }}</small
-              >
-            </td>
-            <td>
-              {{ x.contactName || "Research needed"
-              }}<small>{{ x.jobTitle }} · {{ x.email }}</small>
-            </td>
-            <td>
-              {{ x.industry }}<small>{{ x.country }}</small>
-            </td>
-            <td>
-              <span class="score">{{ x.fitScore }}</span>
-            </td>
-            <td>
-              <span class="score hot">{{ x.intentScore }}</span>
-            </td>
-            <td>
-              <b>{{ priority(x) }}</b>
-            </td>
-            <td>
-              <span class="pill">{{ status(x.status) }}</span>
-            </td>
-            <td>
-              <button class="small" (click)="signalFor = x; signalOpen = true">
-                + Signal
-              </button>
-            </td>
+          <tr *ngFor="let x of prospects" [class.selected-row]="selectedIds.has(x.id)">
+            <td class="select-column"><input type="checkbox" [checked]="selectedIds.has(x.id)" (change)="toggle(x.id)" /></td>
+            <td><div class="company-cell"><span>{{ x.companyName.charAt(0) }}</span><div><b>{{ x.companyName }}</b><small>{{ x.domain }} · {{ x.source || 'Source not recorded' }}</small></div></div></td>
+            <td><b class="cell-title">{{ x.contactName || 'Research needed' }}</b><small>{{ x.jobTitle || 'Role unknown' }} · {{ x.email || 'Email needed' }}</small></td>
+            <td><b class="cell-title">{{ x.industry || 'Unclassified' }}</b><small>{{ x.country || 'Market unknown' }}</small></td>
+            <td class="center"><span class="score fit-score">{{ x.fitScore }}</span></td>
+            <td class="center"><span class="score intent-score">{{ x.intentScore }}</span></td>
+            <td><span class="priority-value" [class.high]="priority(x) >= 70">{{ priority(x) }}</span></td>
+            <td><span class="status-pill">{{ status(x.status) }}</span></td>
+            <td class="action-column"><button class="signal-action" (click)="signalFor = x; signalOpen = true">+ Evidence</button></td>
           </tr>
         </tbody>
       </table>
+      </div>
+      <div class="empty-state prospects-empty" *ngIf="!prospects.length"><i>⌕</i><strong>No prospects match this score</strong><span>Lower the score filter or import a verified company dataset.</span><button class="primary" [disabled]="!activeIcp" (click)="openBulk()">Import companies</button></div>
     </section>
 
     <qai-modal
@@ -554,6 +466,7 @@ import { AcquisitionService } from "./acquisition.service";
       </form></qai-modal
     >
   `,
+  styleUrl: "./discover.page.css",
 })
 export class DiscoverPage implements OnInit {
   overview: any = {};
