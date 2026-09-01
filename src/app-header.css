@@ -4,14 +4,14 @@
   height: 32px;
   place-items: center;
   border-radius: 10px;
-  background: linear-gradient(145deg, #765cff, #5032dc);
-  box-shadow: 0 8px 20px #462cc359;
+  background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 8px 20px #1d4ed84d;
   font-size: 13px;
   font-style: normal;
 }
 .brand strong {
   margin-left: -8px;
-  color: #9f8dff;
+  color: #93c5fd;
 }
 .app-header {
   position: sticky;
@@ -46,12 +46,12 @@
   color: #667085;
 }
 .global-search:hover {
-  border-color: #b8aaff;
+  border-color: #93b4ef;
   background: #fff;
-  box-shadow: 0 0 0 3px #5b3df514;
+  box-shadow: 0 0 0 3px #2563eb14;
 }
 .global-search > span {
-  color: #5b3df5;
+  color: #2563eb;
   font-size: 19px;
 }
 .global-search kbd,
@@ -86,8 +86,8 @@
 .header-action.active,
 .avatar-button:hover,
 .avatar-button.active {
-  background: #f1efff;
-  color: #4d35d0;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 .header-action > span {
   font-size: 17px;
@@ -139,7 +139,7 @@
   text-align: left;
 }
 .help-popover > button:hover {
-  background: #f8f7ff;
+  background: #f8fbff;
 }
 .help-popover > button > i {
   display: grid;
@@ -147,8 +147,8 @@
   height: 29px;
   place-items: center;
   border-radius: 8px;
-  background: #ede9ff;
-  color: #5439d8;
+  background: #eaf2ff;
+  color: #1d4ed8;
   font-style: normal;
   font-size: 11px;
   font-weight: 800;
@@ -167,7 +167,7 @@
   font-weight: 400;
 }
 .help-popover > button em {
-  color: #8b79e8;
+  color: #5684d6;
   font-style: normal;
 }
 .help-popover footer {
@@ -175,7 +175,7 @@
 }
 .help-popover footer button {
   width: 100%;
-  color: #5439d8;
+  color: #1d4ed8;
 }
 .account-popover {
   width: 330px;
@@ -227,7 +227,7 @@
   text-align: left;
 }
 .account-popover > button:hover {
-  background: #f6f5ff;
+  background: #f8fbff;
 }
 .account-popover .logout-action {
   margin-top: 6px;
@@ -262,7 +262,7 @@
   border-bottom: 1px solid #e6e8ee;
 }
 .command-palette > header > span {
-  color: #5b3df5;
+  color: #2563eb;
   font-size: 24px;
 }
 .command-palette input {
@@ -297,7 +297,7 @@
   text-align: left;
 }
 .command-results > button:hover {
-  background: #f2efff;
+  background: #eff6ff;
 }
 .command-results > button > i {
   display: grid;
@@ -305,8 +305,8 @@
   height: 34px;
   place-items: center;
   border-radius: 9px;
-  background: #f1efff;
-  color: #5439d8;
+  background: #eaf2ff;
+  color: #1d4ed8;
   font-style: normal;
 }
 .command-results > button span b,

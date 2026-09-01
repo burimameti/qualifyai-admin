@@ -4,12 +4,12 @@
   --line: #dfe4ec;
   --text: #172033;
   --muted: #667085;
-  --blue: #5b3df5;
-  --nav: #17152d;
+  --blue: #2563eb;
+  --nav: #0f172a;
   --green: #11845b;
   --red: #d92d20;
   --amber: #b54708;
-  --soft-blue: #f1efff;
+  --soft-blue: #eff6ff;
 }
 html,
 body {
@@ -18,7 +18,7 @@ body {
 }
 body {
   background:
-    radial-gradient(circle at 80% -10%, #eeeaff 0, transparent 27rem), var(--bg);
+    radial-gradient(circle at 80% -10%, #e8f0ff 0, transparent 27rem), var(--bg);
 }
 button {
   min-height: 40px;
@@ -28,7 +28,7 @@ button {
   font-weight: 650;
 }
 button.primary {
-  box-shadow: 0 7px 18px #5b3df533;
+  box-shadow: 0 7px 18px #2563eb33;
 }
 button:disabled {
   cursor: not-allowed;
@@ -41,7 +41,7 @@ button:disabled {
 .shell > aside {
   width: 272px;
   padding: 24px 16px;
-  background: linear-gradient(180deg, #17152d, #111225);
+  background: linear-gradient(180deg, #0f172a, #0b1220);
 }
 .brand {
   font-size: 20px;
@@ -97,14 +97,14 @@ button:disabled {
   color: #fff;
 }
 .shell nav a.active {
-  border-color: #6757c8;
-  background: linear-gradient(90deg, #332b69, #262142);
+  border-color: #3b82f6;
+  background: linear-gradient(90deg, #173b78, #142b55);
   color: #fff;
   box-shadow: 0 8px 20px #08071145;
 }
 .shell nav a.active > span {
-  border-color: #7865ee;
-  background: #5b3df5;
+  border-color: #60a5fa;
+  background: #2563eb;
   color: #fff;
 }
 .shell > main {
@@ -247,7 +247,7 @@ button:disabled {
 .form select:focus,
 .form textarea:focus {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px #5b3df51f;
+  box-shadow: 0 0 0 3px #2563eb1f;
 }
 .form footer {
   display: flex;
@@ -504,7 +504,7 @@ button:disabled {
 }
 .plan-card.featured {
   border: 2px solid var(--blue);
-  box-shadow: 0 14px 36px #5b3df521;
+  box-shadow: 0 14px 36px #2563eb21;
 }
 .plan-card h3 {
   margin: 8px 0 4px;
@@ -765,7 +765,7 @@ button:disabled {
   font-weight: 750;
 }
 .preview-body > aside span.active {
-  background: #5b3df5;
+  background: #2563eb;
   color: #fff;
   box-shadow: 0 6px 15px rgba(91, 61, 245, 0.25);
 }
@@ -794,7 +794,7 @@ button:disabled {
   font-size: 14px;
 }
 .preview-title strong {
-  color: #5b3df5;
+  color: #2563eb;
   font-size: 23px;
 }
 .preview-flow {
@@ -846,18 +846,18 @@ button:disabled {
   color: #078348;
 }
 .preview-flow article.active {
-  border-color: #9e8cff;
-  box-shadow: 0 7px 20px rgba(91, 61, 245, 0.11);
+  border-color: #93b4ef;
+  box-shadow: 0 7px 20px #2563eb1c;
 }
 .preview-flow article.active > i {
-  background: #ede9ff;
-  color: #5b3df5;
+  background: #eaf2ff;
+  color: #2563eb;
 }
 .preview-flow article em {
   position: absolute;
   top: 12px;
   right: 10px;
-  color: #5b3df5;
+  color: #2563eb;
   font-size: 7px;
   font-style: normal;
   font-weight: 800;
