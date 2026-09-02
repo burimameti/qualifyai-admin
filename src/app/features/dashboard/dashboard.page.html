@@ -1,5 +1,6 @@
 <qai-page-header title="Revenue Command Center" subtitle="Your live view of acquisition, pipeline, customer operations and automated work.">
   <button type="button" class="quiet-action" (click)="refresh()">↻ Refresh data</button>
+  <button type="button" class="danger-action" (click)="resetDemoData()" [disabled]="resetting">{{ resetting ? 'Resetting workspace…' : 'Reset business data' }}</button>
   <button type="button" class="primary" (click)="go('/automations')">Review automations</button>
 </qai-page-header>
 

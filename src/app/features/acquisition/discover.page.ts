@@ -109,12 +109,12 @@ import { AcquisitionService } from "./acquisition.service";
         <tbody>
           <tr *ngFor="let x of prospects" [class.selected-row]="selectedIds.has(x.id)">
             <td class="select-column"><input type="checkbox" [checked]="selectedIds.has(x.id)" (change)="toggle(x.id)" /></td>
-            <td><div class="company-cell"><span>{{ x.companyName.charAt(0) }}</span><div><b>{{ x.companyName }}</b><small>{{ x.domain }} · {{ x.source || 'Source not recorded' }}</small></div></div></td>
-            <td><b class="cell-title">{{ x.contactName || 'Research needed' }}</b><small>{{ x.jobTitle || 'Role unknown' }} · {{ x.email || 'Email needed' }}</small></td>
+            <td><div class="company-cell"><span>{{ x.companyName.charAt(0) }}</span><div><b>{{ x.companyName }}</b><small>{{ x.domain }} · {{ x.datasetOrigin || x.source || 'Source not recorded' }}</small></div></div></td>
+            <td><b class="cell-title">{{ x.contactName || x.suggestedBuyer || 'Research needed' }}</b><small>{{ x.jobTitle || x.suggestedBuyer || 'Role unknown' }} · {{ x.email || 'Email needed' }}</small></td>
             <td><b class="cell-title">{{ x.industry || 'Unclassified' }}</b><small>{{ x.country || 'Market unknown' }}</small></td>
             <td class="center"><span class="score fit-score">{{ x.fitScore }}</span></td>
             <td class="center"><span class="score intent-score">{{ x.intentScore }}</span></td>
-            <td><span class="priority-value" [class.high]="priority(x) >= 70">{{ priority(x) }}</span></td>
+            <td><span class="priority-value" [class.high]="priority(x) >= 70">{{ x.priority || priority(x) }}</span><small *ngIf="x.contactReadiness">{{ x.contactReadiness }}</small></td>
             <td><span class="status-pill">{{ status(x.status) }}</span></td>
             <td class="action-column"><button class="signal-action" (click)="signalFor = x; signalOpen = true">+ Evidence</button></td>
           </tr>
@@ -534,6 +534,16 @@ export class DiscoverPage implements OnInit {
     { key: "industry", label: "Industry", required: false },
     { key: "country", label: "Country", required: false },
     { key: "source", label: "Row source", required: false },
+    { key: "priority", label: "Priority tier", required: false },
+    { key: "contactReadiness", label: "Contact readiness", required: false },
+    { key: "suggestedBuyer", label: "Suggested buyer", required: false },
+    { key: "sizeBand", label: "Company size band", required: false },
+    { key: "painHypothesis", label: "Pain hypothesis", required: false },
+    { key: "offer", label: "Recommended offer", required: false },
+    { key: "sourceUrl", label: "Evidence source URL", required: false },
+    { key: "verificationStatus", label: "Verification status", required: false },
+    { key: "outreachStatus", label: "Outreach status", required: false },
+    { key: "datasetOrigin", label: "Dataset origin", required: false },
     { key: "fitScore", label: "Fit score", required: false },
     { key: "intentScore", label: "Intent score", required: false },
   ];
@@ -729,7 +739,7 @@ export class DiscoverPage implements OnInit {
           this.bulkImporting = false;
           this.bulkOpen = false;
           this.bulkStep = 0;
-          this.message = `${result.imported} imported; ${result.duplicates} duplicates and ${result.rejected + this.bulkRejected} invalid rows skipped.`;
+          this.message = `${result.imported} imported; ${result.updated || 0} enriched; ${result.duplicates} duplicate rows and ${result.rejected + this.bulkRejected} invalid rows skipped.`;
           this.bulkRows = [];
           this.load();
           if (

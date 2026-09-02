@@ -43,6 +43,7 @@ export class DashboardPage implements OnInit {
   summary: Partial<DashboardSummary> = {};
   loaded = false;
   installing = false;
+  resetting = false;
   error = '';
   readonly tenantLabel = localStorage.getItem('qai-tenant') || 'current tenant';
 
@@ -107,6 +108,22 @@ export class DashboardPage implements OnInit {
         this.installing = false;
         this.error =
           response?.error?.detail || response?.error?.title || 'Demo scenario could not be installed.';
+      }
+    });
+  }
+
+  resetDemoData(): void {
+    if (!confirm('This removes current tenant business demo data: prospects, lists, CRM, pipelines, meetings, agents, automations and support scenario records. Identity users and licensing remain. Continue?')) return;
+    this.resetting = true;
+    this.error = '';
+    this.dashboard.resetDemo().subscribe({
+      next: () => {
+        this.resetting = false;
+        this.refresh();
+      },
+      error: (response) => {
+        this.resetting = false;
+        this.error = response?.error?.detail || response?.error?.title || 'Workspace reset could not be completed.';
       }
     });
   }
