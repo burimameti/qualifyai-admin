@@ -25,7 +25,8 @@
               "src/shared-surfaces.css",
               "src/shared-kpis.css",
               "src/shared-forms.css",
-              "src/shared-actions.css"
+              "src/shared-actions.css",
+              "src/modal-viewport.css"
             ]
           },
           "configurations": {

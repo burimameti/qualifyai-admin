@@ -309,10 +309,11 @@ import { AcquisitionService } from "./acquisition.service";
     >
     <qai-modal
       [open]="bulkOpen"
+      [wide]="true"
       title="Import verified companies"
       (close)="bulkOpen = false"
       ><form
-        class="form"
+        class="form import-form"
         (ngSubmit)="bulkStep === 3 ? importDataset() : nextBulk()"
       >
         <qai-wizard-steps

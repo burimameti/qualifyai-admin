@@ -24,6 +24,7 @@ export class PageHeader {
   template: `<div class="modal-backdrop" *ngIf="open" (click)="close.emit()">
     <section
       class="modal-card"
+      [class.modal-card--wide]="wide"
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="title"
@@ -43,13 +44,14 @@ export class PageHeader {
           ×
         </button>
       </header>
-      <ng-content />
+      <div class="modal-body"><ng-content /></div>
     </section>
   </div>`,
 })
 export class Modal {
   @Input() open = false;
   @Input() title = "";
+  @Input() wide = false;
   @Output() close = new EventEmitter<void>();
 }
 

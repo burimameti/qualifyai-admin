@@ -1,0 +1,18 @@
+/* Keep long workflows inside the viewport: the content scrolls, the decision stays visible. */
+.modal-backdrop{padding:16px}
+.modal-card{display:flex;flex-direction:column;width:min(640px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:hidden}
+.modal-card--wide{width:min(920px,calc(100vw - 32px))}
+.modal-card>header{flex:0 0 auto}
+.modal-body{min-height:0;overflow:auto;overscroll-behavior:contain}
+.modal-body>.form{min-width:0}
+.modal-body>.form:not(.import-form){padding:24px}
+.modal-body>.import-form{display:flex;flex-direction:column;min-height:100%;padding:0}
+.import-form>qai-wizard-steps{display:block;position:sticky;top:0;z-index:2;padding:16px 18px 12px;background:#fff;border-bottom:1px solid var(--line)}
+.import-form>section{padding:16px 18px 18px;min-width:0}
+.modal-card .import-form>footer{position:sticky;bottom:0;z-index:2;display:flex;justify-content:flex-end;gap:8px;margin:0;margin-top:auto;padding:12px 18px;background:#fff;border-top:1px solid var(--line);box-shadow:0 -8px 18px #1018280a}
+.import-form>footer button{min-width:104px}
+.import-preview{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.import-preview table{min-width:640px}
+.import-mapping{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.import-mapping label{min-width:0}
+@media(max-width:680px){.modal-backdrop{padding:8px}.modal-card,.modal-card--wide{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.modal-body>.form:not(.import-form){padding:20px}.import-mapping{grid-template-columns:1fr}.modal-card .import-form>footer{padding:10px 12px}.import-form>footer button{flex:1;min-width:0}}
