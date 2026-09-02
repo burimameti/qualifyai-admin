@@ -27,6 +27,9 @@ export class IntegrationsService {
   verifySender(id: string, token: string | null) {
     return this.api.post<any>(`email-operations/senders/${id}/verify`, { token });
   }
+  sendVerification(id: string) {
+    return this.api.post<any>(`email-operations/senders/${id}/send-verification`, {});
+  }
   suppress(email: string, reason: string) {
     return this.api.post<any>('email-operations/suppressions', { email, reason });
   }

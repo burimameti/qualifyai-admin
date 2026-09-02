@@ -30,7 +30,7 @@ import { IntegrationsService } from "./integrations.service";
           'Ready to send',
         ]"
         [descriptions]="[
-          'Brevo or SMTP',
+          'Brevo, SendGrid or SMTP',
           'Name and email',
           'Provider confirmation',
           'Approval still required',
@@ -54,9 +54,12 @@ import { IntegrationsService } from "./integrations.service";
               {{ s.status === 1 ? "Verified" : "Verification required" }}</span
             >
           </div>
-          <button *ngIf="s.status !== 1" (click)="verify(s)">
-            {{ s.provider === "brevo" ? "Check verification" : "Verify" }}
-          </button>
+          <div class="actions" *ngIf="s.status !== 1">
+            <button *ngIf="s.provider !== 'brevo'" (click)="sendVerification(s)">Resend code</button>
+            <button (click)="verify(s)">
+              {{ s.provider === "brevo" ? "Check verification" : "Enter code" }}
+            </button>
+          </div>
         </div>
         <form class="form" (ngSubmit)="addSender()">
           <h4 class="section-title">Add a sending identity</h4>
@@ -231,11 +234,17 @@ export class IntegrationsPage implements OnInit {
     });
   }
   verify(s: any) {
-    const token = s.provider === "brevo" ? null : prompt("Verification token");
+    const token = s.provider === "brevo" ? null : prompt("Enter the code received in the sender mailbox");
     if (s.provider !== "brevo" && !token) return;
     this.data.verifySender(s.id, token).subscribe({
       next: () => this.load(),
       error: (e) => alert(e?.error?.detail || "Verification failed."),
+    });
+  }
+  sendVerification(s: any) {
+    this.data.sendVerification(s.id).subscribe({
+      next: () => alert("Verification code sent to the sender mailbox."),
+      error: (e) => alert(e?.error?.detail || "Could not send the verification code."),
     });
   }
   suppress() {
