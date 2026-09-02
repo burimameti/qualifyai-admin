@@ -1,6 +1,7 @@
 <qai-page-header title="Revenue Command Center" subtitle="Your live view of acquisition, pipeline, customer operations and automated work.">
   <button type="button" class="quiet-action" (click)="refresh()">↻ Refresh data</button>
-  <button type="button" class="danger-action" (click)="resetDemoData()" [disabled]="resetting">{{ resetting ? 'Resetting workspace…' : 'Reset business data' }}</button>
+  <button type="button" class="quiet-action" (click)="prepareRealWorkspace()" [disabled]="resetting">{{ resetting ? 'Preparing workspace…' : 'Prepare real workspace' }}</button>
+  <button type="button" class="danger-action" (click)="loadPresentationDemo()" [disabled]="installing">{{ installing ? 'Loading presentation…' : 'Load presentation demo' }}</button>
   <button type="button" class="primary" (click)="go('/automations')">Review automations</button>
 </qai-page-header>
 
@@ -12,11 +13,12 @@
 <section class="onboarding" *ngIf="loaded && !error && !hasData">
   <div class="onboarding-copy">
     <span class="eyebrow">WORKSPACE SETUP</span>
-    <h2>Turn this empty workspace into a complete revenue story</h2>
-    <p>Install a safe, persisted scenario for <strong>{{ tenantLabel }}</strong>. It includes prospects, outreach, an interested reply, an opportunity, a booked demo, support tickets and completed automations.</p>
+    <h2>Choose how this workspace will be used</h2>
+    <p><strong>Real workspace</strong> is for your verified imports and live, approval-controlled outreach. <strong>Presentation demo</strong> creates only clearly marked, safe <code>.example</code> records for showing the product.</p>
     <div class="onboarding-actions">
-      <button type="button" class="primary large" (click)="installDemo()" [disabled]="installing">{{ installing ? 'Installing scenario…' : 'Install complete demo scenario' }}</button>
-      <span>No real emails are sent.</span>
+      <button type="button" class="primary large" (click)="prepareRealWorkspace()" [disabled]="resetting">Prepare real workspace → import prospects</button>
+      <button type="button" class="quiet-action" (click)="loadPresentationDemo()" [disabled]="installing">Load presentation demo</button>
+      <span>Presentation records can never send real email.</span>
     </div>
   </div>
   <div class="journey-preview" aria-label="Demo journey preview">

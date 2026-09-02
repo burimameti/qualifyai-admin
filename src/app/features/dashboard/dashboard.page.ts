@@ -96,10 +96,11 @@ export class DashboardPage implements OnInit {
     });
   }
 
-  installDemo(): void {
+  loadPresentationDemo(): void {
+    if (!confirm('Load the presentation demo for this tenant? This clears current business data, then adds only [PRESENTATION] .example prospects, a sample campaign, demo meeting, workflows and support records. It never sends real email.')) return;
     this.installing = true;
     this.error = '';
-    this.dashboard.installDemo().subscribe({
+    this.dashboard.resetAndInstallDemo().subscribe({
       next: () => {
         this.installing = false;
         this.refresh();
@@ -107,19 +108,19 @@ export class DashboardPage implements OnInit {
       error: (response) => {
         this.installing = false;
         this.error =
-          response?.error?.detail || response?.error?.title || 'Demo scenario could not be installed.';
+          response?.error?.detail || response?.error?.title || 'Presentation demo could not be loaded.';
       }
     });
   }
 
-  resetDemoData(): void {
-    if (!confirm('This removes current tenant business demo data: prospects, lists, CRM, pipelines, meetings, agents, automations and support scenario records. Identity users and licensing remain. Continue?')) return;
+  prepareRealWorkspace(): void {
+    if (!confirm('Prepare this tenant for real imported data? This removes existing business and presentation records: prospects, lists, CRM, pipelines, meetings, agents, automations and support scenario records. Identity users, licenses and settings remain.')) return;
     this.resetting = true;
     this.error = '';
     this.dashboard.resetDemo().subscribe({
       next: () => {
         this.resetting = false;
-        this.refresh();
+        void this.router.navigateByUrl('/acquisition/discover');
       },
       error: (response) => {
         this.resetting = false;

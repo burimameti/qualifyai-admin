@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
 import { AutomationRule } from "../../core/models/platform.models";
 import { Modal, PageHeader } from "../../shared/ui";
 import { AutomationsService } from "./automations.service";
@@ -11,7 +12,7 @@ import { AutomationsService } from "./automations.service";
   template: `<qai-page-header
       title="Automations"
       subtitle="Turn customer and sales signals into automated revenue actions."
-      ><button (click)="installScenarios()" [disabled]="installing">{{installing?'Installing…':'Install realistic scenarios'}}</button><button (click)="runAll()">▶ Run sales engine</button
+      ><button (click)="openWorkspaceMode()">Workspace data mode</button><button (click)="runAll()">▶ Run sales engine</button
       ><button class="primary" (click)="open()">
         + New automation
       </button></qai-page-header
@@ -92,7 +93,6 @@ export class AutomationsPage implements OnInit {
   deadLetters: any[] = [];
   show = false;
   lastRun = "Never";
-  installing = false;
   query = "";
   statusFilter = "";
   form: any = {
@@ -103,7 +103,7 @@ export class AutomationsPage implements OnInit {
       '[{"type":"createOpportunity"},{"type":"createTask"},{"type":"notifySales"}]',
     active: true,
   };
-  constructor(private data: AutomationsService) {}
+  constructor(private data: AutomationsService, private router: Router) {}
   ngOnInit() {
     this.load();
   }
@@ -195,5 +195,5 @@ export class AutomationsPage implements OnInit {
       );
     });
   }
-  installScenarios(){this.installing=true;this.data.installScenarios().subscribe({next:r=>{this.installing=false;this.load();alert(`${r.scenario} installed in SQL: ${r.prospects} prospects, ${r.campaigns} campaigns, ${r.opportunities} opportunities, ${r.meetings} meetings, ${r.tickets} tickets and ${r.automations} automations.`)},error:e=>{this.installing=false;alert(e?.error?.detail||'Scenarios could not be installed.')}})}
+  openWorkspaceMode(){void this.router.navigateByUrl('/dashboard')}
 }

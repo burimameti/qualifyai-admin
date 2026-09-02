@@ -29,5 +29,5 @@ export class ModuleAdminService {
   suspend(tenantId:string){return this.http.post<void>(`${this.identity}/licenses/tenant/${tenantId}/suspend`,{})}
   activateTenant(tenantId:string){return this.http.post<void>(`${this.identity}/tenants/${tenantId}/activate`,{})}
   suspendTenant(tenantId:string){return this.http.post<void>(`${this.identity}/tenants/${tenantId}/suspend`,{})}
-  installDemo(tenantId:string){return this.api.post<any>(`demo-scenarios/tenant/${tenantId}/install`,{})}
+  loadPresentationDemo(tenantId:string){return this.api.post<any>(`demo-scenarios/tenant/${tenantId}/reset-and-install`,{})}
 }
