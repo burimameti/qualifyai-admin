@@ -234,6 +234,19 @@ a { color: inherit; text-decoration: none; }
 .contact-card div > a { margin: 8px 0 5px; color: #1d4fae; font-size: 20px; font-weight: 800; }
 .contact-card div > small { color: #7d899a; font-size: 8px; }
 .contact-card > .primary-cta { width: 100%; margin-top: 20px; }
+.demo-request-form { display: block; }
+.contact-card div > b { display: block; margin: 8px 0 5px; color: #1d4fae; font-size: 20px; font-weight: 800; }
+.demo-request-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.demo-request-fields label { display: flex; flex-direction: column; gap: 6px; color: #40506a; font-size: 10px; font-weight: 750; }
+.demo-request-fields label > span { color: #8794a8; font-size: 8px; font-weight: 600; }
+.demo-request-fields label:nth-child(4) { grid-column: 1 / -1; }
+.demo-request-fields input,.demo-request-fields textarea { width: 100%; border: 1px solid #cbd7e6; border-radius: 9px; background: #fff; color: #1d2939; font: inherit; font-size: 11px; outline: 0; padding: 10px 11px; }
+.demo-request-fields textarea { min-height: 74px; resize: vertical; }
+.demo-request-fields input:focus,.demo-request-fields textarea:focus { border-color: #245dcc; box-shadow: 0 0 0 3px #245dcc18; }
+.demo-request-trap { display: none!important; }
+.demo-request-message { margin: 14px 0 0; border-radius: 8px; font-size: 10px; line-height: 1.45; padding: 9px 10px; }
+.demo-request-message.success { background: #ecfdf3; color: #067647; }
+.demo-request-message.error { background: #fff1f2; color: #be123c; }
 
 .landing-footer { width: min(1360px, calc(100% - 56px)); min-height: 150px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; border-top: 1px solid #dee4ec; }
 .landing-footer p { color: #788598; font-size: 9px; }
@@ -303,6 +316,8 @@ a { color: inherit; text-decoration: none; }
   .security-section { padding: 32px 22px; }
   .security-grid { grid-template-columns: 1fr; }
   .contact-card div > a { font-size: 16px; }
+  .contact-card div > b { font-size: 16px; }
+  .demo-request-fields { grid-template-columns: 1fr; }
   .landing-footer { grid-template-columns: 1fr; align-items: start; padding: 35px 0; }
   .landing-footer nav { flex-wrap: wrap; }
   .landing-footer > small { grid-column: auto; margin-top: 0; }

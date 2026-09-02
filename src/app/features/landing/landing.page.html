@@ -140,10 +140,19 @@
 
     <section class="contact-section" id="contact">
       <div class="contact-copy"><span class="section-label">PRODUCT DEMO</span><h2>See how QualifyAI fits your revenue operation.</h2><p>Bring your use case. We will map the journey from prospect discovery to pipeline, customer operations and governed automation.</p></div>
-      <div class="contact-card">
-        <div><span>START A CONVERSATION</span><a href="mailto:hello@qualifyai.com">hello&#64;qualifyai.com</a><small>Remote product demos · Available worldwide</small></div>
-        <a class="primary-cta" href="mailto:hello@qualifyai.com?subject=QualifyAI%20product%20demo">Request a tailored demo <span>→</span></a>
-      </div>
+      <form class="contact-card demo-request-form" (ngSubmit)="requestDemo()">
+        <div><span>START A CONVERSATION</span><b>Request a tailored demo</b><small>Tell us what you want to improve. Your request goes directly to our product team.</small></div>
+        <div class="demo-request-fields">
+          <label>Your name<input [(ngModel)]="demoRequest.name" name="name" autocomplete="name" required></label>
+          <label>Work email<input type="email" [(ngModel)]="demoRequest.email" name="email" autocomplete="email" required></label>
+          <label>Company <span>optional</span><input [(ngModel)]="demoRequest.company" name="company" autocomplete="organization"></label>
+          <label>What would you like to improve? <span>optional</span><textarea [(ngModel)]="demoRequest.message" name="message" rows="3" placeholder="Prospecting, sales operations, customer support or automation"></textarea></label>
+          <label class="demo-request-trap" aria-hidden="true">Website<input [(ngModel)]="demoRequest.website" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <p class="demo-request-message success" *ngIf="demoRequestMessage">{{ demoRequestMessage }}</p>
+        <p class="demo-request-message error" *ngIf="demoRequestError">{{ demoRequestError }}</p>
+        <button class="primary-cta" type="submit" [disabled]="submittingDemo">{{ submittingDemo ? 'Sending request…' : 'Request a tailored demo' }} <span>→</span></button>
+      </form>
     </section>
   </main>
 
