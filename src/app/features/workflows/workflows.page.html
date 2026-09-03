@@ -124,6 +124,13 @@
       <strong>Execution guardrail</strong>
       <p>External messages require sender verification, suppression check and approval.</p>
     </div>
+    <section class="instruction-map">
+      <span class="eyebrow">EXECUTION MAP</span>
+      <div><small>Input</small><b>{{instructionGuide(selected).input}}</b></div>
+      <div><small>Produces</small><b>{{instructionGuide(selected).outcome}}</b></div>
+      <div><small>Controls</small><b>{{instructionGuide(selected).controls}}</b></div>
+      <div><small>Then</small><b>{{instructionGuide(selected).next}}</b></div>
+    </section>
     <button class="danger" [disabled]="selected.type === 'start'" (click)="remove(selected)">
       Remove step
     </button>

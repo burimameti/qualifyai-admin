@@ -4,12 +4,16 @@ import { FormsModule } from "@angular/forms";
 import { Opportunity } from "../../core/models/platform.models";
 import { Modal, PageHeader } from "../../shared/ui";
 import { CrmService } from "./crm.service";
+
+interface SalesPipeline { id: string; name: string; isDefault: boolean; }
+interface PipelineStage { id: string; pipelineId: string; name: string; sortOrder: number; probability: number; }
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
+  styleUrl: "./opportunities.page.css",
   template: `<qai-page-header
       title="Opportunities"
-      subtitle="Track qualified revenue from first intent to won business."
+      subtitle="See exactly how qualified demand becomes a deal, then place it in the right sales process."
       ><button (click)="load()">↻ Refresh</button
       ><button class="primary" (click)="open()">
         + Opportunity
@@ -22,6 +26,10 @@ import { CrmService } from "./crm.service";
         <p>{{ error }}</p>
       </div>
     </div>
+    <section class="panel conversion-guide">
+      <div><span class="eyebrow">CONVERSION PATH</span><h2>From prospect to revenue</h2><p>Prospects enter campaigns. A qualified lead or interested reply creates an opportunity. Every opportunity must be assigned to a pipeline stage to appear on its board.</p></div>
+      <ol><li><b>1</b>Prospect & campaign</li><li><b>2</b>Qualified lead / reply</li><li><b>3</b>Opportunity</li><li><b>4</b>Pipeline stage</li><li><b>5</b>Won or lost</li></ol>
+    </section>
     <div class="metrics compact">
       <article>
         <span>Open value</span><strong>{{ money(openValue) }}</strong>
@@ -45,6 +53,7 @@ import { CrmService } from "./crm.service";
           <tr>
             <th>Opportunity</th>
             <th>Value</th>
+            <th>Sales process</th>
             <th>Status</th>
             <th>Expected close</th>
             <th>Automation influence</th>
@@ -57,11 +66,10 @@ import { CrmService } from "./crm.service";
               <b>{{ x.name }}</b>
             </td>
             <td>{{ money(x.amount) }}</td>
-            <td>
-              <span class="pill">{{ status(x.status) }}</span>
-            </td>
+            <td><span class="stage-assignment" [class.unassigned]="!x.pipelineStageId">{{ stageLabel(x) }}</span></td>
+            <td><span class="pill">{{ status(x.status) }}</span></td>
             <td>{{ x.expectedCloseUtc | date: "mediumDate" }}</td>
-            <td><span class="positive">Qualified automatically</span></td>
+            <td><span [class.positive]="!!x.leadId">{{ x.leadId ? 'Qualified lead / campaign' : 'Manual opportunity' }}</span></td>
             <td><button class="small" (click)="open(x)">Edit</button></td>
           </tr>
         </tbody>
@@ -89,6 +97,11 @@ import { CrmService } from "./crm.service";
             </select></label
           >
         </div>
+        <div class="form2">
+          <label>Sales pipeline<select [(ngModel)]="formPipelineId" name="pipeline" (ngModelChange)="choosePipeline($event)"><option value="">Assign later</option><option *ngFor="let pipeline of pipelines" [value]="pipeline.id">{{pipeline.name}}{{pipeline.isDefault ? ' · Default' : ''}}</option></select></label>
+          <label>Pipeline stage<select [(ngModel)]="form.pipelineStageId" name="stage" [disabled]="!formPipelineId"><option [ngValue]="undefined">Choose stage</option><option *ngFor="let stage of formStages" [value]="stage.id">{{stage.name}} · {{stage.probability}}%</option></select><small *ngIf="!pipelines.length">Create a pipeline first, then assign this deal.</small></label>
+        </div>
+        <p class="form-note" *ngIf="!form.pipelineStageId">This opportunity will remain unassigned until you choose a pipeline stage. It will not appear on any board.</p>
         <label
           >Expected close<input
             type="date"
@@ -104,11 +117,14 @@ import { CrmService } from "./crm.service";
 })
 export class OpportunitiesPage implements OnInit {
   rows: Opportunity[] = [];
+  pipelines: SalesPipeline[] = [];
+  stages: PipelineStage[] = [];
   show = false;
   loading = false;
   error = "";
   form: any = { status: 0, amount: 0 };
   closeDate = "";
+  formPipelineId = "";
   constructor(private crm: CrmService) {}
   ngOnInit() {
     this.load();
@@ -126,6 +142,10 @@ export class OpportunitiesPage implements OnInit {
         this.loading = false;
       },
     });
+    this.crm.salesPipelines().subscribe({
+      next: (r) => { this.pipelines = r?.pipelines || []; this.stages = r?.stages || []; },
+      error: (e) => { if (!this.error) this.error = this.apiError(e); },
+    });
   }
   get openValue() {
     return this.rows
@@ -142,6 +162,8 @@ export class OpportunitiesPage implements OnInit {
   }
   open(x?: Opportunity) {
     this.form = x ? { ...x } : { status: 0, amount: 0 };
+    this.formPipelineId = x?.pipelineStageId ? this.stage(x.pipelineStageId)?.pipelineId || "" : this.defaultPipeline?.id || "";
+    if (!x && this.formPipelineId) this.form.pipelineStageId = this.formStages[0]?.id;
     this.closeDate = x?.expectedCloseUtc
       ? String(x.expectedCloseUtc).slice(0, 10)
       : "";
@@ -160,6 +182,11 @@ export class OpportunitiesPage implements OnInit {
       error: (e) => (this.error = this.apiError(e)),
     });
   }
+  get defaultPipeline() { return this.pipelines.find(x => x.isDefault) || this.pipelines[0]; }
+  get formStages() { return this.stages.filter(x => x.pipelineId === this.formPipelineId).sort((a,b) => a.sortOrder - b.sortOrder); }
+  choosePipeline(id: string) { this.formPipelineId = id; this.form.pipelineStageId = this.formStages[0]?.id; }
+  stage(id?: string) { return this.stages.find(x => x.id === id); }
+  stageLabel(x: Opportunity) { const stage = this.stage(x.pipelineStageId); return stage ? `${this.pipelines.find(p => p.id === stage.pipelineId)?.name || 'Pipeline'} · ${stage.name}` : 'Unassigned'; }
   private applyStatus(r: Opportunity, desired: string) {
     const finish = (saved: Opportunity) => {
       const i = this.rows.findIndex((x) => x.id === saved.id);

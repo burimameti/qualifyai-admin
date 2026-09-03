@@ -9,6 +9,7 @@ import { AutomationsService } from "./automations.service";
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
   styleUrl: "./automations.page.css",
+  styles: [`.automation-explainer{align-items:center;background:linear-gradient(105deg,#eff6ff,#f8fafc);border-color:#cfe0ff;display:flex;gap:24px;justify-content:space-between;margin-bottom:16px;padding:18px 21px}.automation-explainer .eyebrow{color:#2563eb;font-size:.66rem;font-weight:800;letter-spacing:.11em}.automation-explainer h2{font-size:1rem;margin:4px 0}.automation-explainer p{color:#526278;font-size:.77rem;line-height:1.48;margin:0;max-width:680px}.automation-explainer ol{display:grid;gap:7px;grid-template-columns:repeat(4,1fr);list-style:none;margin:0;min-width:370px;padding:0}.automation-explainer li{align-items:center;color:#334155;display:flex;flex-direction:column;font-size:.66rem;font-weight:750;gap:4px;text-align:center}.automation-explainer li b{align-items:center;background:#dbeafe;border-radius:50%;color:#1d4ed8;display:flex;height:24px;justify-content:center;width:24px}.trigger-detail{color:#64748b;display:block;font-size:.67rem;line-height:1.3;margin-top:5px}.notice{border-radius:10px;margin:0 0 14px;padding:11px 14px}.notice.success{background:#ecfdf5;color:#047857}@media(max-width:900px){.automation-explainer{align-items:stretch;flex-direction:column}.automation-explainer ol{min-width:0;width:100%}}`],
   template: `<qai-page-header
       title="Automations"
       subtitle="Turn customer and sales signals into automated revenue actions."
@@ -17,6 +18,11 @@ import { AutomationsService } from "./automations.service";
         + New automation
       </button></qai-page-header
     >
+    <section class="automation-explainer panel">
+      <div><span class="eyebrow">AUTOMATION EVENT FLOW</span><h2>What starts a rule and where it runs</h2><p>A real business signal is matched to an active rule. The rule records a run, checks conditions, executes actions and leaves a log or dead letter. <b>Run</b> executes it directly in Platform API; <b>Publish event</b> sends a test trigger through RabbitMQ.</p></div>
+      <ol><li><b>1</b>Business signal</li><li><b>2</b>Active rule</li><li><b>3</b>Actions & controls</li><li><b>4</b>Run log / retry</li></ol>
+    </section>
+    <p class="notice success" *ngIf="publishedMessage">{{publishedMessage}}</p>
     <section class="directory-card automation-workspace">
       <header>
         <div><span class="eyebrow">Revenue automation</span><h2>Automation rules</h2><p>Review triggers, business actions and execution controls in one workspace.</p></div>
@@ -35,11 +41,11 @@ import { AutomationsService } from "./automations.service";
         <table><thead><tr><th>Automation</th><th>Trigger</th><th>Business actions</th><th>Status</th><th>Enabled</th><th>Actions</th></tr></thead>
         <tbody><tr *ngFor="let a of visibleRows">
           <td><div class="directory-identity"><i>⚡</i><span><b>{{a.name}}</b><small>{{conditionSummary(a)}}</small></span></div></td>
-          <td><span class="event-name">{{a.trigger}}</span></td>
+          <td><span class="event-name">{{a.trigger}}</span><small class="trigger-detail">{{triggerMeaning(a.trigger)}}</small></td>
           <td><span class="action-flow">{{actions(a)}}</span></td>
           <td><span class="pill" [class.success]="a.active" [class.status-pending]="!a.active">{{a.active ? 'Active' : 'Paused'}}</span></td>
           <td><label class="toggle" [attr.aria-label]="'Enable ' + a.name"><input type="checkbox" [(ngModel)]="a.active" (change)="toggle(a)" /><span></span></label></td>
-          <td><div class="directory-actions"><button (click)="run(a)">▶ Run</button><button (click)="publish(a)">Publish event</button><button class="primary" (click)="open(a)">Edit</button></div></td>
+          <td><div class="directory-actions"><button (click)="run(a)">▶ Run now</button><button [disabled]="!a.active" (click)="publish(a)">Publish test event</button><button class="primary" (click)="open(a)">Edit</button></div></td>
         </tr></tbody></table>
       </div>
       <ng-template #noAutomations><div class="directory-empty"><i>⚡</i><strong>No automation rules found</strong><span>Adjust the filter or create a new automation.</span><button class="primary" (click)="open()">Create automation</button></div></ng-template>
@@ -95,6 +101,7 @@ export class AutomationsPage implements OnInit {
   lastRun = "Never";
   query = "";
   statusFilter = "";
+  publishedMessage = "";
   form: any = {
     name: "Hot lead → pipeline",
     trigger: "lead.qualified",
@@ -153,6 +160,17 @@ export class AutomationsPage implements OnInit {
       return "Custom execution conditions";
     }
   }
+  triggerMeaning(trigger: string) {
+    const labels: Record<string, string> = {
+      "lead.score.changed": "when a lead score changes",
+      "lead.qualified": "when a lead reaches qualified status",
+      "conversation.sales_intent": "when a conversation shows buying intent",
+      "ticket.sla_breach": "when a customer issue risks its SLA",
+      "meeting.booked": "when a meeting is confirmed",
+      "schedule.weekday": "on the configured weekday schedule"
+    };
+    return labels[trigger] || "when this business event is received";
+  }
   save() {
     try {
       JSON.parse(this.form.conditionsJson || "[]");
@@ -184,7 +202,7 @@ export class AutomationsPage implements OnInit {
     },error:e=>alert(e?.error?.detail||'Automation execution failed.')});
   }
   retry(run:any){this.data.retry(run.id).subscribe({next:()=>this.load(),error:e=>alert(e?.error?.detail||'Retry failed.')})}
-  publish(a:AutomationRule){this.data.publishTrigger(a.id).subscribe({next:r=>alert(`Event ${r.eventId} published to RabbitMQ.`),error:()=>alert('Event could not be published.')})}
+  publish(a:AutomationRule){this.data.publishTrigger(a.id).subscribe({next:r=>this.publishedMessage=`Test event ${r.eventId} was published to RabbitMQ for “${a.name}”. Open execution history to see the consumer result.`,error:()=>alert('Event could not be published. Check that the rule is active.')})}
   ruleName(id:string){return this.rows.find(x=>x.id===id)?.name||id?.slice(0,8)||'Unknown'}
   runSummary(run:any){try{return JSON.parse(run.logJson||'[]').map((x:any)=>x.message||x).join(' · ')}catch{return run.logJson||'—'}}
   runAll() {

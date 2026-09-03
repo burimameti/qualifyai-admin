@@ -16,9 +16,13 @@ import { AiAgentsService } from "./ai-agents.service";
         </option></select
       ><button (click)="newOpen = true">+ Agent</button
       ><button class="primary" (click)="save()">
-        Save & publish
+        Save configuration
       </button></qai-page-header
     >
+    <section class="agent-deployment panel">
+      <div><span class="eyebrow">AGENT DEPLOYMENT</span><h2>Where {{agent.name || 'this assistant'}} works</h2><p>An active agent is available to the assistant runtime and sandbox test. It is not automatically connected to Inbox, a campaign or a workflow — that binding must be configured before it can act on customer data.</p></div>
+      <ol><li><b [class.success-dot]="agent.active"></b><span><strong>Runtime</strong><small>{{agent.active ? 'Enabled for controlled tests' : 'Paused'}}</small></span></li><li><b class="neutral-dot"></b><span><strong>Live channel</strong><small>Not connected</small></span></li><li><b class="neutral-dot"></b><span><strong>Workflow binding</strong><small>Not connected</small></span></li></ol>
+    </section>
     <div class="studio">
       <aside>
         <div class="agent-avatar">✦</div>
@@ -106,7 +110,7 @@ import { AiAgentsService } from "./ai-agents.service";
         </label>
       </section>
       <aside class="test">
-        <header><b>Agent test</b><span>Sandbox</span></header>
+        <header><div><b>Agent test</b><small>Safe sandbox only</small></div><span>Not live</span></header>
         <div class="testmsgs">
           <p class="user" *ngIf="prompt">{{ prompt }}</p>
           <p class="bot" *ngIf="answer">
@@ -132,6 +136,7 @@ import { AiAgentsService } from "./ai-agents.service";
         </footer>
       </form></qai-modal
     >`,
+  styles: [`.agent-deployment{align-items:center;background:linear-gradient(105deg,#eff6ff,#f8fafc);border-color:#cfe0ff;display:flex;gap:26px;justify-content:space-between;margin-bottom:16px;padding:18px 20px}.agent-deployment .eyebrow{color:#2563eb;font-size:.66rem;font-weight:800;letter-spacing:.11em}.agent-deployment h2{font-size:1rem;margin:4px 0}.agent-deployment p{color:#526278;font-size:.77rem;line-height:1.45;margin:0;max-width:680px}.agent-deployment ol{display:grid;gap:8px;list-style:none;margin:0;min-width:235px;padding:0}.agent-deployment li{align-items:center;background:#fff;border:1px solid #dbeafe;border-radius:9px;display:flex;gap:8px;padding:7px 9px}.agent-deployment li b{border-radius:50%;display:block;height:8px;width:8px}.success-dot{background:#22c55e}.neutral-dot{background:#94a3b8}.agent-deployment li span{display:flex;flex-direction:column}.agent-deployment li strong{font-size:.72rem}.agent-deployment li small{color:#64748b;font-size:.67rem}.test header div{display:flex;flex-direction:column}.test header small{color:#64748b;font-size:.68rem;margin-top:2px}@media(max-width:900px){.agent-deployment{align-items:stretch;flex-direction:column}.agent-deployment ol{min-width:0;width:100%}}`],
 })
 export class AiAgentsPage implements OnInit {
   agents: AiAgent[] = [];
@@ -189,7 +194,7 @@ export class AiAgentsPage implements OnInit {
       this.agent = r;
       const i = this.agents.findIndex((a) => a.id === r.id);
       i >= 0 ? (this.agents[i] = r) : this.agents.push(r);
-      alert("Agent configuration published.");
+      alert("Agent configuration saved. It is available for sandbox tests; connect a channel or workflow before using it with customers.");
     });
   }
   create() {

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Modal, PageHeader } from '../../shared/ui';
 import { WorkflowsService } from './workflows.service';
 
-type StepType = 'start' | 'question' | 'condition' | 'score' | 'action' | 'meeting' | 'handoff';
+type StepType = 'start' | 'trigger' | 'question' | 'enrich' | 'condition' | 'score' | 'action' | 'approval' | 'send' | 'wait' | 'meeting' | 'handoff' | 'notify' | 'stop';
 interface Step {
   id: string;
   flowId: string;
@@ -58,12 +58,19 @@ export class WorkflowsPage implements OnInit {
   error = '';
 
   readonly library: Array<{ type: StepType; label: string; detail: string }> = [
+    { type: 'trigger', label: 'Event trigger', detail: 'Start from a reply, score change, form or schedule' },
     { type: 'question', label: 'Collect data', detail: 'Capture missing qualification data' },
+    { type: 'enrich', label: 'Enrich prospect', detail: 'Verify company, contact and buying evidence' },
     { type: 'condition', label: 'Business rule', detail: 'Continue only when criteria match' },
-    { type: 'score', label: 'Score prospect', detail: 'Calculate fit and buying intent' },
-    { type: 'action', label: 'Run action', detail: 'Enrich, create a task or send' },
+    { type: 'score', label: 'Score prospect', detail: 'Calculate fit, intent and priority' },
+    { type: 'action', label: 'Business action', detail: 'Create lead, task, opportunity or notification' },
+    { type: 'approval', label: 'Approval gate', detail: 'Pause before a high-impact action' },
+    { type: 'send', label: 'Send outreach', detail: 'Use verified sender, suppression and approval checks' },
+    { type: 'wait', label: 'Wait or schedule', detail: 'Delay follow-up or wait for a business event' },
     { type: 'meeting', label: 'Book meeting', detail: 'Offer a demo or sales meeting' },
-    { type: 'handoff', label: 'Human approval', detail: 'Pause and assign an owner' }
+    { type: 'handoff', label: 'Human handoff', detail: 'Assign an owner with the full context' },
+    { type: 'notify', label: 'Notify team', detail: 'Alert sales or operations in the right channel' },
+    { type: 'stop', label: 'Stop or suppress', detail: 'End safely on opt-out, loss or failed eligibility' }
   ];
 
   readonly templates: Template[] = [
@@ -257,6 +264,25 @@ export class WorkflowsPage implements OnInit {
     if (this.selected)
       this.selected.configJson = JSON.stringify({ ...this.config(this.selected), detail: value });
   }
+  instructionGuide(step: Step): { input: string; outcome: string; controls: string; next: string } {
+    const guides: Record<StepType, { input: string; outcome: string; controls: string; next: string }> = {
+      start: { input: 'Manual launch or installed template', outcome: 'Creates a process context', controls: 'Tenant scope', next: 'Choose an entry trigger' },
+      trigger: { input: 'Event, schedule, form, reply or score change', outcome: 'Starts one traceable run', controls: 'Event schema and tenant', next: 'Collect or enrich data' },
+      question: { input: 'Prospect, contact or customer response', outcome: 'Stores required qualification facts', controls: 'Required fields and consent', next: 'Validate eligibility' },
+      enrich: { input: 'Company domain or contact details', outcome: 'Verified company and buying evidence', controls: 'Source confidence and duplicate checks', next: 'Score fit and intent' },
+      condition: { input: 'Stored facts and policy rules', outcome: 'Routes yes/no branch', controls: 'Explainable rule expression', next: 'Score, act or stop' },
+      score: { input: 'Fit, intent, firmographic and engagement signals', outcome: 'Priority and qualification result', controls: 'Thresholds and score explanation', next: 'Route to nurture or sales' },
+      action: { input: 'Approved process context', outcome: 'Creates a business record or task', controls: 'Permission and idempotency checks', next: 'Notify owner or continue' },
+      approval: { input: 'Proposed external or high-risk action', outcome: 'Review task for a responsible owner', controls: 'No execution before approval', next: 'Send, edit or stop' },
+      send: { input: 'Approved message and verified sender', outcome: 'Provider delivery request', controls: 'Suppression, sender verification and rate limits', next: 'Wait for provider event or reply' },
+      wait: { input: 'Delay duration or target event', outcome: 'Scheduled next step', controls: 'Cancellation and timeout policy', next: 'Resume at the configured step' },
+      meeting: { input: 'Qualified contact and meeting type', outcome: 'Booking or sales task', controls: 'Calendar availability and consent', next: 'Create or advance opportunity' },
+      handoff: { input: 'Full run context and reason', outcome: 'Assigned human work item', controls: 'Owner, SLA and audit record', next: 'Resume after human decision' },
+      notify: { input: 'Relevant outcome and target team', outcome: 'Traceable notification', controls: 'Role-based recipients', next: 'Track acknowledgement' },
+      stop: { input: 'Opt-out, loss, invalid data or policy decision', outcome: 'Process ends safely', controls: 'Suppression and audit trail', next: 'No further external action' }
+    };
+    return guides[step.type];
+  }
   track(_: number, step: Step): string {
     return step.id;
   }
@@ -300,11 +326,18 @@ export class WorkflowsPage implements OnInit {
       {
         start: 'Start workflow',
         question: 'Collect qualification data',
+        trigger: 'Start from an event',
+        enrich: 'Verify and enrich data',
         condition: 'Check business rule',
         score: 'Score prospect',
         action: 'Run business action',
+        approval: 'Request human approval',
+        send: 'Send controlled outreach',
+        wait: 'Wait or schedule next step',
         meeting: 'Book meeting',
-        handoff: 'Human approval'
+        handoff: 'Human handoff',
+        notify: 'Notify responsible team',
+        stop: 'Stop process safely'
       } as Record<StepType, string>
     )[type];
   }

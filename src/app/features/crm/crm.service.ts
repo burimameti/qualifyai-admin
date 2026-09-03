@@ -51,6 +51,9 @@ export class CrmService {
   opportunities() {
     return this.api.get<Opportunity[]>("crm/opportunities");
   }
+  salesPipelines() {
+    return this.api.get<any>("sales/pipelines");
+  }
   createOpportunity(x: Partial<Opportunity>) {
     return this.api.post<Opportunity>("crm/opportunities", x);
   }
