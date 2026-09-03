@@ -28,6 +28,22 @@ interface NavigationItem {
     RouterLink,
     RouterLinkActive,
   ],
+  styles: [
+    `
+      .operating-path {
+        margin: -4px 0 14px;
+        padding: 10px;
+        border: 1px solid #263957;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #101d31, #142743);
+      }
+      .operating-path span,
+      .operating-path small { display: block; color: #8da0bd; font-size: 8px; }
+      .operating-path span { font-weight: 800; letter-spacing: .9px; }
+      .operating-path b { display: block; color: #fff; font-size: 10px; margin: 5px 0 3px; }
+      .operating-path b i { color: #6d94e8; font-style: normal; padding: 0 2px; }
+    `,
+  ],
   template: `
     <div class="shell">
       <aside>
@@ -41,6 +57,11 @@ interface NavigationItem {
             <b>{{ workspaceName }}</b
             ><span>{{ session?.licensePlan || "Licensed" }} workspace</span>
           </div>
+        </div>
+        <div class="operating-path">
+          <span>REVENUE OPERATING PATH</span>
+          <b>Find <i>→</i> Reach <i>→</i> Convert</b>
+          <small>Then automate, learn and improve.</small>
         </div>
         <nav>
           <ng-container *ngFor="let group of visibleGroups"
@@ -128,31 +149,40 @@ interface NavigationItem {
 
           <section class="header-popover help-popover" *ngIf="helpOpen">
             <span class="section-kicker">Quick start</span>
-            <h3>Launch your first acquisition workflow</h3>
-            <button type="button" (click)="go('/discover')">
+            <h3>Move one target account to a qualified opportunity</h3>
+            <button type="button" (click)="go('/integrations')">
               <i>1</i
               ><span
-                ><b>Define your market</b
+                ><b>Connect data and a sender</b
                 ><small
-                  >Create an ICP and import verified companies.</small
+                  >Set the source, provider and verified sending identity.</small
                 ></span
               ><em>→</em>
             </button>
-            <button type="button" (click)="go('/integrations')">
+            <button type="button" (click)="go('/discover')">
               <i>2</i
               ><span
-                ><b>Verify the sender</b
+                ><b>Find and qualify prospects</b
                 ><small
-                  >Connect Brevo or SMTP and verify your identity.</small
+                  >Define the ICP, import accounts and review evidence.</small
                 ></span
               ><em>→</em>
             </button>
             <button type="button" (click)="go('/campaigns')">
               <i>3</i
               ><span
-                ><b>Build and approve</b
+                ><b>Reach with human approval</b
                 ><small
-                  >Select the audience, sequence and human approval.</small
+                  >Build the campaign, approve messages, then send.</small
+                ></span
+              ><em>→</em>
+            </button>
+            <button type="button" (click)="go('/pipeline')">
+              <i>4</i
+              ><span
+                ><b>Convert the reply</b
+                ><small
+                  >Qualify interest, assign a pipeline stage and book a demo.</small
                 ></span
               ><em>→</em>
             </button>
@@ -247,16 +277,17 @@ export class ShellComponent {
   query = "";
 
   readonly groups = [
-    "OVERVIEW",
-    "ACQUIRE",
-    "CONVERT",
-    "CUSTOMER SERVICE",
-    "BUSINESS AUTOMATION",
-    "PLATFORM",
+    "COMMAND CENTER",
+    "01 — PREPARE",
+    "02 — FIND & REACH",
+    "03 — CONVERT",
+    "04 — CUSTOMER OPERATIONS",
+    "05 — AUTOMATE & IMPROVE",
+    "ADMINISTRATION",
   ];
   readonly nav: NavigationItem[] = [
     {
-      group: "OVERVIEW",
+      group: "COMMAND CENTER",
       label: "Dashboard",
       url: "/dashboard",
       icon: "⌂",
@@ -264,7 +295,15 @@ export class ShellComponent {
       permission: "analytics.read",
     },
     {
-      group: "ACQUIRE",
+      group: "01 — PREPARE",
+      label: "Connections & Senders",
+      url: "/integrations",
+      icon: "↗",
+      module: "integrations",
+      permission: "integrations.read",
+    },
+    {
+      group: "02 — FIND & REACH",
       label: "Prospect Discovery",
       url: "/discover",
       icon: "⌕",
@@ -272,7 +311,7 @@ export class ShellComponent {
       permission: "crm.read",
     },
     {
-      group: "ACQUIRE",
+      group: "02 — FIND & REACH",
       label: "Campaigns",
       url: "/campaigns",
       icon: "↗",
@@ -280,23 +319,7 @@ export class ShellComponent {
       permission: "crm.read",
     },
     {
-      group: "CONVERT",
-      label: "Companies",
-      url: "/crm/companies",
-      icon: "▦",
-      module: "crm",
-      permission: "crm.read",
-    },
-    {
-      group: "CONVERT",
-      label: "Contacts",
-      url: "/crm/contacts",
-      icon: "◎",
-      module: "crm",
-      permission: "crm.read",
-    },
-    {
-      group: "CONVERT",
+      group: "03 — CONVERT",
       label: "Qualified Leads",
       url: "/crm/leads",
       icon: "◆",
@@ -304,7 +327,7 @@ export class ShellComponent {
       permission: "crm.read",
     },
     {
-      group: "CONVERT",
+      group: "03 — CONVERT",
       label: "Opportunities",
       url: "/crm/opportunities",
       icon: "◈",
@@ -312,15 +335,15 @@ export class ShellComponent {
       permission: "crm.read",
     },
     {
-      group: "CONVERT",
-      label: "Pipeline",
+      group: "03 — CONVERT",
+      label: "Sales Pipelines",
       url: "/pipeline",
       icon: "▤",
       module: "crm",
       permission: "crm.read",
     },
     {
-      group: "CONVERT",
+      group: "03 — CONVERT",
       label: "Demos & Meetings",
       url: "/meetings",
       icon: "◷",
@@ -328,15 +351,31 @@ export class ShellComponent {
       permission: "crm.read",
     },
     {
-      group: "CUSTOMER SERVICE",
-      label: "Customer Inbox",
+      group: "02 — FIND & REACH",
+      label: "Replies & Inbox",
       url: "/inbox",
       icon: "▱",
       module: "inbox",
       permission: "conversations.read",
     },
     {
-      group: "CUSTOMER SERVICE",
+      group: "04 — CUSTOMER OPERATIONS",
+      label: "Companies",
+      url: "/crm/companies",
+      icon: "▦",
+      module: "crm",
+      permission: "crm.read",
+    },
+    {
+      group: "04 — CUSTOMER OPERATIONS",
+      label: "Contacts",
+      url: "/crm/contacts",
+      icon: "◎",
+      module: "crm",
+      permission: "crm.read",
+    },
+    {
+      group: "04 — CUSTOMER OPERATIONS",
       label: "Issues & Tickets",
       url: "/tickets",
       icon: "▣",
@@ -344,7 +383,7 @@ export class ShellComponent {
       permission: "tickets.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Business Assistants",
       url: "/ai/agents",
       icon: "✦",
@@ -352,7 +391,7 @@ export class ShellComponent {
       permission: "agents.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Knowledge",
       url: "/knowledge",
       icon: "▥",
@@ -360,15 +399,15 @@ export class ShellComponent {
       permission: "knowledge.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
-      label: "Knowledge Gaps",
+      group: "05 — AUTOMATE & IMPROVE",
+      label: "Knowledge Improvements",
       url: "/knowledge/gaps",
       icon: "△",
       module: "knowledge",
       permission: "knowledge.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Workflows",
       url: "/workflows",
       icon: "⌁",
@@ -376,7 +415,7 @@ export class ShellComponent {
       permission: "automation.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Automations",
       url: "/automations",
       icon: "⚡",
@@ -384,7 +423,7 @@ export class ShellComponent {
       permission: "automation.read",
     },
     {
-      group: "BUSINESS AUTOMATION",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Evaluations",
       url: "/evaluations",
       icon: "✓",
@@ -392,15 +431,7 @@ export class ShellComponent {
       permission: "agents.read",
     },
     {
-      group: "PLATFORM",
-      label: "Integrations",
-      url: "/integrations",
-      icon: "↗",
-      module: "integrations",
-      permission: "integrations.read",
-    },
-    {
-      group: "PLATFORM",
+      group: "05 — AUTOMATE & IMPROVE",
       label: "Analytics & ROI",
       url: "/analytics",
       icon: "▥",
@@ -408,7 +439,7 @@ export class ShellComponent {
       permission: "analytics.read",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Billing & Usage",
       url: "/billing",
       icon: "€",
@@ -416,7 +447,7 @@ export class ShellComponent {
       permission: "billing.read",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Modules & Features",
       url: "/admin/modules",
       icon: "◫",
@@ -424,7 +455,7 @@ export class ShellComponent {
       permission: "billing.manage",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Users & Access",
       url: "/users",
       icon: "♙",
@@ -432,7 +463,7 @@ export class ShellComponent {
       permission: "users.read",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Security",
       url: "/security",
       icon: "◇",
@@ -440,7 +471,7 @@ export class ShellComponent {
       permission: "settings.manage",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "White Label",
       url: "/white-label",
       icon: "◐",
@@ -448,7 +479,7 @@ export class ShellComponent {
       permission: "settings.manage",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Industry Packs",
       url: "/industry-packs",
       icon: "▦",
@@ -456,7 +487,7 @@ export class ShellComponent {
       permission: "settings.manage",
     },
     {
-      group: "PLATFORM",
+      group: "ADMINISTRATION",
       label: "Audit Log",
       url: "/audit",
       icon: "≡",
