@@ -13,6 +13,12 @@ export class AcquisitionService {
   createIcp(input: any) {
     return this.api.post<any>("acquisition/icp", input);
   }
+  discoveryProviders() {
+    return this.api.get<any[]>("acquisition/discovery/providers");
+  }
+  discoverOnline(icpId: string, input: any) {
+    return this.api.post<any>(`acquisition/icp/${icpId}/discover`, input);
+  }
   prospects(minimumScore = 0) {
     return this.api.get<any[]>(
       `acquisition/prospects?minimumScore=${minimumScore}`,

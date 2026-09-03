@@ -16,6 +16,7 @@ import { AcquisitionService } from "./acquisition.service";
       <button class="quiet-action" (click)="load()">↻ Refresh data</button>
       <button (click)="openIcp()">+ New ICP</button>
       <button (click)="prospectOpen = true">+ Add prospect</button>
+      <button class="primary" [disabled]="!activeIcp || discoveryRunning" (click)="openOnlineDiscovery()">⌕ Find online</button>
       <button class="primary" [disabled]="!activeIcp" (click)="openBulk()">⇧ Import companies</button>
     </qai-page-header>
     <section class="discovery-hero">
@@ -123,6 +124,25 @@ import { AcquisitionService } from "./acquisition.service";
       </div>
       <div class="empty-state prospects-empty" *ngIf="!prospects.length"><i>⌕</i><strong>No prospects match this score</strong><span>Lower the score filter or import a verified company dataset.</span><button class="primary" [disabled]="!activeIcp" (click)="openBulk()">Import companies</button></div>
     </section>
+
+    <qai-modal [open]="onlineDiscoveryOpen" title="Find companies online" (close)="onlineDiscoveryOpen = false">
+      <form class="form" (ngSubmit)="runOnlineDiscovery()">
+        <qai-callout icon="⌕" title="Company-level public discovery" text="The search connector finds public company websites, scores them against this ICP and creates a review list. It never invents contacts or email addresses." />
+        <label>Search provider
+          <select name="discoverySource" [(ngModel)]="onlineDiscovery.source">
+            <option *ngFor="let provider of discoveryProviders" [value]="provider.name" [disabled]="!provider.configured">{{ provider.name }}{{ provider.configured ? '' : ' — needs API key' }}</option>
+          </select>
+          <small class="field-help" *ngIf="selectedDiscoveryProvider && !selectedDiscoveryProvider.configured">{{ selectedDiscoveryProvider.description }}</small>
+        </label>
+        <label>State or region <input name="discoveryRegion" [(ngModel)]="onlineDiscovery.region" placeholder="North Rhine-Westphalia, Bavaria, DACH" /><small class="field-help">Optional. The region becomes an additional market-match signal.</small></label>
+        <div class="form2">
+          <label>Maximum companies <input type="number" name="discoveryMax" min="1" max="100" [(ngModel)]="onlineDiscovery.maximumResults" /></label>
+          <label>Minimum qualification score <input type="number" name="discoveryScore" min="0" max="100" [(ngModel)]="onlineDiscovery.minimumScore" /></label>
+        </div>
+        <label>Review target list name <input name="discoveryList" [(ngModel)]="onlineDiscovery.targetListName" placeholder="Review — German logistics prospects" /><small class="field-help">Qualified accounts are placed here for human review; no outreach is sent.</small></label>
+        <footer><button type="button" (click)="onlineDiscoveryOpen = false">Cancel</button><button class="primary" type="submit" [disabled]="discoveryRunning || !selectedDiscoveryProvider?.configured">{{ discoveryRunning ? 'Searching…' : 'Find and qualify companies' }}</button></footer>
+      </form>
+    </qai-modal>
 
     <qai-modal
       [open]="icpOpen"
@@ -494,6 +514,17 @@ export class DiscoverPage implements OnInit {
   bulkMapping: Record<string, string> = {};
   bulkRejected = 0;
   bulkError = "";
+  discoveryProviders: any[] = [];
+  onlineDiscoveryOpen = false;
+  discoveryRunning = false;
+  onlineDiscovery: any = {
+    source: "serpapi",
+    region: "",
+    maximumResults: 50,
+    minimumScore: 70,
+    targetListName: "",
+    createTargetList: true,
+  };
   icpStep = 0;
   bulkStep = 0;
   signalFor: any;
@@ -557,6 +588,10 @@ export class DiscoverPage implements OnInit {
   }
   load() {
     this.data.overview().subscribe((r) => (this.overview = r));
+    this.data.discoveryProviders().subscribe({
+      next: (r) => (this.discoveryProviders = r),
+      error: () => (this.discoveryProviders = []),
+    });
     this.data.icps().subscribe((r) => {
       this.icps = r;
       if (!this.activeIcp)
@@ -574,6 +609,9 @@ export class DiscoverPage implements OnInit {
   }
   get activeIcp() {
     return this.icps.find((x) => x.id === this.selectedIcpId && x.active);
+  }
+  get selectedDiscoveryProvider() {
+    return this.discoveryProviders.find((x) => x.name === this.onlineDiscovery.source);
   }
   get journeyStep() {
     if (!this.activeIcp) return 0;
@@ -619,6 +657,30 @@ export class DiscoverPage implements OnInit {
     this.bulkMapping = {};
     this.bulkRejected = 0;
     this.bulkOpen = true;
+  }
+  openOnlineDiscovery() {
+    if (!this.activeIcp) return;
+    this.error = "";
+    this.message = "";
+    this.onlineDiscovery.targetListName = `Review — ${this.activeIcp.name} — ${new Date().toISOString().slice(0, 10)}`;
+    this.onlineDiscoveryOpen = true;
+  }
+  runOnlineDiscovery() {
+    if (!this.activeIcp || !this.selectedDiscoveryProvider?.configured) return;
+    this.discoveryRunning = true;
+    this.error = "";
+    this.data.discoverOnline(this.activeIcp.id, this.onlineDiscovery).subscribe({
+      next: (result) => {
+        this.discoveryRunning = false;
+        this.onlineDiscoveryOpen = false;
+        this.message = `Online discovery found ${result.received} companies. ${result.qualified} qualified; ${result.created} new and ${result.updated} refreshed. Review list is ready before any outreach.`;
+        this.load();
+      },
+      error: (error) => {
+        this.discoveryRunning = false;
+        this.error = error?.error?.detail || "Online discovery could not run. Check the provider connection and try again.";
+      },
+    });
   }
   nextBulk() {
     if (this.bulkStep === 1) this.rebuildMappedRows();

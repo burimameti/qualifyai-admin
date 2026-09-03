@@ -5,11 +5,12 @@ import { Router } from "@angular/router";
 import { AutomationRule } from "../../core/models/platform.models";
 import { Modal, PageHeader } from "../../shared/ui";
 import { AutomationsService } from "./automations.service";
+import { AcquisitionService } from "../acquisition/acquisition.service";
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, PageHeader],
   styleUrl: "./automations.page.css",
-  styles: [`.automation-explainer{align-items:center;background:linear-gradient(105deg,#eff6ff,#f8fafc);border-color:#cfe0ff;display:flex;gap:24px;justify-content:space-between;margin-bottom:16px;padding:18px 21px}.automation-explainer .eyebrow{color:#2563eb;font-size:.66rem;font-weight:800;letter-spacing:.11em}.automation-explainer h2{font-size:1rem;margin:4px 0}.automation-explainer p{color:#526278;font-size:.77rem;line-height:1.48;margin:0;max-width:680px}.automation-explainer ol{display:grid;gap:7px;grid-template-columns:repeat(4,1fr);list-style:none;margin:0;min-width:370px;padding:0}.automation-explainer li{align-items:center;color:#334155;display:flex;flex-direction:column;font-size:.66rem;font-weight:750;gap:4px;text-align:center}.automation-explainer li b{align-items:center;background:#dbeafe;border-radius:50%;color:#1d4ed8;display:flex;height:24px;justify-content:center;width:24px}.trigger-detail{color:#64748b;display:block;font-size:.67rem;line-height:1.3;margin-top:5px}.notice{border-radius:10px;margin:0 0 14px;padding:11px 14px}.notice.success{background:#ecfdf5;color:#047857}@media(max-width:900px){.automation-explainer{align-items:stretch;flex-direction:column}.automation-explainer ol{min-width:0;width:100%}}`],
+  styles: [`.automation-explainer{align-items:center;background:linear-gradient(105deg,#eff6ff,#f8fafc);border-color:#cfe0ff;display:flex;gap:24px;justify-content:space-between;margin-bottom:16px;padding:18px 21px}.automation-explainer .eyebrow{color:#2563eb;font-size:.66rem;font-weight:800;letter-spacing:.11em}.automation-explainer h2{font-size:1rem;margin:4px 0}.automation-explainer p{color:#526278;font-size:.77rem;line-height:1.48;margin:0;max-width:680px}.automation-explainer ol{display:grid;gap:7px;grid-template-columns:repeat(4,1fr);list-style:none;margin:0;min-width:370px;padding:0}.automation-explainer li{align-items:center;color:#334155;display:flex;flex-direction:column;font-size:.66rem;font-weight:750;gap:4px;text-align:center}.automation-explainer li b{align-items:center;background:#dbeafe;border-radius:50%;color:#1d4ed8;display:flex;height:24px;justify-content:center;width:24px}.trigger-detail{color:#64748b;display:block;font-size:.67rem;line-height:1.3;margin-top:5px}.notice{border-radius:10px;margin:0 0 14px;padding:11px 14px}.notice.success{background:#ecfdf5;color:#047857}.discovery-template{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;margin:10px 0;padding:12px}.discovery-template b,.discovery-template small{display:block}.discovery-template b{color:#1e3a8a;font-size:.78rem}.discovery-template small{color:#526278;font-size:.68rem;line-height:1.45;margin:4px 0 9px}.discovery-template div{align-items:end;display:flex;gap:8px}.discovery-template label{flex:1;margin:0}@media(max-width:900px){.automation-explainer{align-items:stretch;flex-direction:column}.automation-explainer ol{min-width:0;width:100%}}`],
   template: `<qai-page-header
       title="Automations"
       subtitle="Turn customer and sales signals into automated revenue actions."
@@ -70,7 +71,9 @@ import { AutomationsService } from "./automations.service";
             <option>conversation.sales_intent</option>
             <option>ticket.sla_breach</option>
             <option>meeting.booked</option>
+            <option>schedule.weekday</option>
           </select></label
+        ><section class="discovery-template" *ngIf="form.trigger === 'schedule.weekday'"><b>Online prospect discovery</b><small>Runs live company search against one ICP, scores public evidence and creates a human-review target list. It does not send outreach.</small><div><label>ICP<select [(ngModel)]="discoveryIcpId" name="discoveryIcp"><option value="">Select an ICP</option><option *ngFor="let icp of icps" [value]="icp.id">{{icp.name}}</option></select></label><button type="button" (click)="useOnlineDiscoveryTemplate()" [disabled]="!discoveryIcpId">Use discovery template</button></div></section>
         ><label
           >Conditions JSON<textarea
             [(ngModel)]="form.conditionsJson"
@@ -102,6 +105,8 @@ export class AutomationsPage implements OnInit {
   query = "";
   statusFilter = "";
   publishedMessage = "";
+  icps: any[] = [];
+  discoveryIcpId = "";
   form: any = {
     name: "Hot lead → pipeline",
     trigger: "lead.qualified",
@@ -110,7 +115,7 @@ export class AutomationsPage implements OnInit {
       '[{"type":"createOpportunity"},{"type":"createTask"},{"type":"notifySales"}]',
     active: true,
   };
-  constructor(private data: AutomationsService, private router: Router) {}
+  constructor(private data: AutomationsService, private acquisition: AcquisitionService, private router: Router) {}
   ngOnInit() {
     this.load();
   }
@@ -130,6 +135,7 @@ export class AutomationsPage implements OnInit {
       if (r.length) this.lastRun = new Date(r[0].createdAtUtc).toLocaleString();
     });
     this.data.deadLetters().subscribe(r=>this.deadLetters=r);
+    this.acquisition.icps().subscribe(r => this.icps = r.filter(x => x.active));
   }
   open(a?: AutomationRule) {
     this.form = a
@@ -142,6 +148,17 @@ export class AutomationsPage implements OnInit {
           active: true,
         };
     this.show = true;
+  }
+  useOnlineDiscoveryTemplate() {
+    const icp = this.icps.find(x => x.id === this.discoveryIcpId);
+    if (!icp) return;
+    this.form.name = `${icp.name} → qualified target list`;
+    this.form.trigger = "schedule.weekday";
+    this.form.conditionsJson = '[{"field":"icp.active","operator":"equals","value":true}]';
+    this.form.actionsJson = JSON.stringify([
+      { type: "discoverProspects", icpId: icp.id, source: "serpapi", maximumResults: 50, minimumScore: 70, createTargetList: true },
+      { type: "notify", title: "Online discovery review list ready", message: `Review newly qualified accounts for ${icp.name} before outreach.` }
+    ]);
   }
   actions(a: AutomationRule) {
     try {
